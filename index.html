@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบจัดทำบัตรข้อสอบ (Item Card System)</title>
-  
+ 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Font: Sarabun -->
@@ -18,7 +18,8 @@
 
   <style>
     body { font-family: 'Sarabun', sans-serif; }
-    
+   
+    /* สไตล์สำหรับการพิมพ์กระดาษ A4 แนวตั้ง (หน้าละ 2 การ์ดข้อสอบ) */
     @media print {
       body * { visibility: hidden; }
       #print-area, #print-area * { visibility: visible; }
@@ -35,20 +36,21 @@
     .a4-page {
       width: 210mm;
       min-height: 297mm;
-      padding: 8mm;
+      padding: 8mm 10mm;
       margin: auto;
       background: white;
       box-sizing: border-box;
     }
 
-    /* กรอบการ์ดข้อสอบสำหรับพิมพ์ */
+    /* โครงสร้างการ์ดข้อสอบตามแบบรูปอ้างอิง */
     .card-container {
       font-size: 11px;
-      line-height: 1.3;
-      margin-bottom: 8mm;
+      line-height: 1.35;
+      margin-bottom: 6mm;
       color: #000;
+      box-sizing: border-box;
     }
-    
+
     .card-header-box {
       display: flex;
       justify-content: space-between;
@@ -56,56 +58,40 @@
       margin-bottom: 4px;
     }
 
-    .card-body-grid {
+    .card-main-grid {
       display: flex;
-      gap: 6px;
+      border: 1px solid #000;
       width: 100%;
+      min-height: 125mm;
     }
 
     .card-left-col {
       width: 68%;
-      border: 1px solid #000;
+      border-right: 1px solid #000;
       padding: 8px 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 130mm;
     }
 
     .card-right-col {
       width: 32%;
-      border: 1px solid #000;
       padding: 8px 10px;
-      min-height: 130mm;
+      display: flex;
+      flex-direction: column;
     }
 
     .radio-icon {
       display: inline-block;
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border: 1px solid #000;
       border-radius: 50%;
       margin-right: 2px;
       vertical-align: middle;
-      text-align: center;
-      line-height: 8px;
-      font-size: 8px;
     }
     .radio-icon.checked {
       background-color: #000;
-    }
-    .radio-icon {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border: 1px solid #000;
-  border-radius: 50%;
-  margin-right: 2px;
-  vertical-align: middle;
-    }
-    .radio-icon.checked {
-  background-color: #000;
-  box-shadow: inset 0 0 0 2px #fff;
     }
   </style>
 </head>
@@ -116,24 +102,24 @@
     <nav class="bg-indigo-700 text-white shadow-lg no-print">
       <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-3">
-          <i class="fa-solid fa-file-signature text-2xl"></i>
-          <span class="text-xl font-bold">ระบบจัดทำบัตรข้อสอบ</span>
+          <i class="fa-solid fa-file-signature text-xl sm:text-2xl"></i>
+          <span class="text-lg sm:text-xl font-bold">ระบบจัดทำบัตรข้อสอบ</span>
         </div>
-        <div id="userInfo" class="hidden flex items-center space-x-4">
-          <span id="userName" class="font-medium bg-indigo-800 px-3 py-1 rounded-full text-sm"></span>
-          <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm transition">
-            <i class="fa-solid fa-right-from-bracket mr-1"></i> ออกจากระบบ
+        <div id="userInfo" class="hidden flex items-center space-x-2 sm:space-x-4">
+          <span id="userName" class="font-medium bg-indigo-800 px-2.5 py-1 rounded-full text-xs sm:text-sm"></span>
+          <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-2.5 py-1.5 rounded-lg text-xs sm:text-sm transition">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i> <span class="hidden sm:inline">ออกจากระบบ</span>
           </button>
         </div>
       </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 no-print">
-      
+    <div class="max-w-7xl mx-auto p-3 sm:p-6 no-print">
+     
       <!-- Auth Section -->
-      <div id="authSection" class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 my-10 border border-slate-200">
-        <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6" id="authTitle">เข้าสู่ระบบ</h2>
+      <div id="authSection" class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 sm:p-8 my-6 sm:my-10 border border-slate-200">
+        <h2 class="text-xl sm:text-2xl font-bold text-center text-indigo-700 mb-6" id="authTitle">เข้าสู่ระบบ</h2>
         <form id="authForm" onsubmit="handleAuth(event)">
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
@@ -156,53 +142,53 @@
 
       <!-- Dashboard Section -->
       <div id="dashboardSection" class="hidden">
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-          <h1 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-book-bookmark text-indigo-600 mr-2"></i>แดชบอร์ดรายวิชา</h1>
-          <button onclick="openSubjectModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-medium shadow-md transition flex items-center">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-800"><i class="fa-solid fa-book-bookmark text-indigo-600 mr-2"></i>แดชบอร์ดรายวิชา</h1>
+          <button onclick="openSubjectModal()" class="w-full sm:w-auto justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-medium shadow-md transition flex items-center">
             <i class="fa-solid fa-plus mr-2"></i> เพิ่มรายวิชาใหม่
           </button>
         </div>
-        <div id="subjectList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="subjectList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
       </div>
 
       <!-- Subject Detail Section -->
       <div id="subjectDetailSection" class="hidden">
         <div class="mb-6">
-          <button onclick="showDashboard()" class="text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
+          <button onclick="showDashboard()" class="text-indigo-600 hover:text-indigo-800 mb-3 inline-flex items-center text-sm font-semibold">
             <i class="fa-solid fa-arrow-left mr-2"></i> กลับหน้าแดชบอร์ด
           </button>
-          <div class="bg-white rounded-2xl p-6 shadow-md border-l-8 border-indigo-600 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-md border-l-8 border-indigo-600 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h2 id="detailSubjectName" class="text-2xl font-bold"></h2>
-              <p id="detailSubjectCode" class="text-slate-500 font-medium"></p>
+              <h2 id="detailSubjectName" class="text-xl sm:text-2xl font-bold"></h2>
+              <p id="detailSubjectCode" class="text-slate-500 font-medium text-xs sm:text-sm mt-1"></p>
             </div>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="openQuestionModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-sm shadow transition">
-                <i class="fa-solid fa-plus mr-1"></i> เพิ่มข้อสอบ
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full md:w-auto">
+              <button onclick="openQuestionModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm shadow transition flex items-center justify-center">
+                <i class="fa-solid fa-plus mr-1.5"></i> เพิ่มข้อสอบ
               </button>
-              <button onclick="openExcelModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-sm shadow transition">
-                <i class="fa-solid fa-file-excel mr-1"></i> อัปโหลด Excel
+              <button onclick="openExcelModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm shadow transition flex items-center justify-center">
+                <i class="fa-solid fa-file-excel mr-1.5"></i> อัปโหลด Excel
               </button>
-              <button onclick="printExamCards()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-sm shadow transition">
-                <i class="fa-solid fa-print mr-1"></i> พิมพ์ชุดข้อสอบ
+              <button onclick="printExamCards()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm shadow transition flex items-center justify-center">
+                <i class="fa-solid fa-print mr-1.5"></i> พิมพ์ชุดข้อสอบ
               </button>
             </div>
           </div>
         </div>
-
-        <div id="questionList" class="space-y-4"></div>
+        <div id="questionList" class="space-y-3 sm:space-y-4"></div>
       </div>
 
     </div>
   </div>
 
+  <!-- AREA สำหรับการพิมพ์กระดาษ A4 -->
   <div id="print-area" class="hidden"></div>
 
   <!-- Footer -->
   <footer class="mt-12 py-6 bg-slate-800 text-slate-300 text-center text-sm no-print">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div>
-        <p class="font-medium">created & designed by Shakir</p>
+        <p class="font-medium">created & designed by Shakir เอกวิทย์ สมาน (736904013)</p>
       </div>
       <button onclick="openDonateModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg">
         <i class="fa-solid fa-mug-hot mr-2 text-base"></i> สนับสนุนค่ากาแฟ ☕
@@ -212,16 +198,15 @@
 
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbx9KLEC8MF_c0pgYoIZrI84jWOO5l6NnCXnfs0MQ6fk-uGuL9T4iwmevmp6DzJ8qG4/exec";
-
     let currentUser = null;
     let isRegisterMode = false;
     let currentSubjectId = null;
     let subjectsData = [];
 
     const REQUIRED_HEADERS = [
-      'รูปแบบ', 'กลุ่มสาระ', 'ระดับชั้น', 'สาระ', 'มาตรฐาน', 
-      'ตัวชี้วัด', 'ระดับพฤติกรรม', 'วัตถุประสงค์', 'โจทย์', 
-      'ตัวเลือก1', 'ตัวเลือก2', 'ตัวเลือก3', 'ตัวเลือก4', 'เฉลย', 'เหตุผล'
+      'รูปแบบ', 'กลุ่มสาระ', 'ระดับชั้น', 'สาระ', 'มาตรฐาน',
+      'ตัวชี้วัด', 'ระดับพฤติกรรม', 'วัตถุประสงค์', 'โจทย์',
+      'ตัวเลือก1', 'ตัวเลือก2', 'ตัวเลือก3', 'ตัวเลือก4', 'เฉลย', 'เหตุผล', 'คำอธิบายข้อที่ผิด'
     ];
 
     window.onload = function() {
@@ -260,9 +245,7 @@
       e.preventDefault();
       const user = document.getElementById('authUsername').value;
       const pass = document.getElementById('authPassword').value;
-
       Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
       if (isRegisterMode) {
         const res = await fetch(GAS_URL, {
           method: 'POST',
@@ -323,7 +306,7 @@
       document.getElementById('dashboardSection').classList.remove('hidden');
       document.getElementById('userInfo').classList.remove('hidden');
       document.getElementById('userName').innerText = currentUser.username;
-      
+     
       await loadDataFromSheets();
       renderSubjects();
     }
@@ -331,16 +314,14 @@
     function renderSubjects() {
       const listContainer = document.getElementById('subjectList');
       listContainer.innerHTML = '';
-
       if (subjectsData.length === 0) {
         listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">ยังไม่มีรายวิชาที่สร้างขึ้น กด "เพิ่มรายวิชาใหม่" เพื่อเริ่มสร้าง</div>`;
         return;
       }
-
       subjectsData.forEach((s) => {
         const qCount = s.questions ? s.questions.length : 0;
         listContainer.innerHTML += `
-          <div class="bg-white rounded-2xl shadow-md p-6 relative flex flex-col justify-between hover:shadow-lg transition">
+          <div class="bg-white rounded-2xl shadow-md p-5 relative flex flex-col justify-between hover:shadow-lg transition">
             <div>
               <span class="text-xs font-semibold px-2.5 py-1 rounded bg-indigo-100 text-indigo-800">${s.code}</span>
               <h3 class="text-lg font-bold text-slate-800 mt-2">${s.name}</h3>
@@ -349,11 +330,11 @@
             </div>
             <div class="mt-6 flex justify-between items-center border-t pt-4">
               <button onclick="openSubjectDetail('${s.id}')" class="text-indigo-600 font-semibold hover:underline text-sm flex items-center">
-                <i class="fa-solid fa-folder-open mr-1"></i> จัดการข้อสอบ
+                <i class="fa-solid fa-folder-open mr-1.5"></i> จัดการข้อสอบ
               </button>
-              <div class="space-x-2">
-                <button onclick="editSubject('${s.id}')" class="text-amber-500 hover:text-amber-700 p-1"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteSubject('${s.id}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>
+              <div class="space-x-1">
+                <button onclick="editSubject('${s.id}')" class="text-amber-500 hover:text-amber-700 p-2"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteSubject('${s.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash"></i></button>
               </div>
             </div>
           </div>
@@ -365,10 +346,24 @@
       const { value: formValues } = await Swal.fire({
         title: subject ? 'แก้ไขรายวิชา' : 'เพิ่มรายวิชาใหม่',
         html: `
-          <input id="swal-code" class="swal2-input" placeholder="รหัสวิชา" value="${subject ? subject.code : ''}">
-          <input id="swal-name" class="swal2-input" placeholder="ชื่อรายวิชา" value="${subject ? subject.name : ''}">
-          <input id="swal-topic" class="swal2-input" placeholder="หัวข้อ" value="${subject ? subject.topic : ''}">
-          <input id="swal-max" type="number" class="swal2-input" placeholder="จำนวนข้อสอบ" value="${subject ? subject.maxQuestions : ''}">
+          <div class="text-left space-y-3">
+            <div>
+              <label class="text-xs font-bold text-slate-600">รหัสวิชา</label>
+              <input id="swal-code" class="swal2-input !mt-1 !w-full" placeholder="เช่น ว21101" value="${subject ? subject.code : ''}">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600">ชื่อรายวิชา</label>
+              <input id="swal-name" class="swal2-input !mt-1 !w-full" placeholder="เช่น วิทยาศาสตร์ 1" value="${subject ? subject.name : ''}">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600">หัวข้อ / คำอธิบายรายวิชา</label>
+              <input id="swal-topic" class="swal2-input !mt-1 !w-full" placeholder="หัวข้อเรื่อง" value="${subject ? subject.topic : ''}">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600">จำนวนข้อสอบเป้าหมาย</label>
+              <input id="swal-max" type="number" class="swal2-input !mt-1 !w-full" placeholder="จำนวนข้อสอบ" value="${subject ? subject.maxQuestions : ''}">
+            </div>
+          </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
@@ -384,13 +379,11 @@
           }
         }
       });
-
       if (formValues) {
         if (!formValues.code || !formValues.name) {
           Swal.fire('ข้อผิดพลาด', 'กรุณากรอกรหัสวิชาและชื่อวิชา', 'error');
           return;
         }
-
         Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
@@ -416,7 +409,6 @@
         confirmButtonText: 'ใช่, ลบเลย',
         cancelButtonText: 'ยกเลิก'
       });
-
       if (result.isConfirmed) {
         Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
@@ -432,95 +424,87 @@
     function openSubjectDetail(id) {
       currentSubjectId = id;
       const subject = subjectsData.find(s => s.id === id);
-
       document.getElementById('dashboardSection').classList.add('hidden');
       document.getElementById('subjectDetailSection').classList.remove('hidden');
       document.getElementById('detailSubjectName').innerText = subject.name;
       document.getElementById('detailSubjectCode').innerText = `รหัสวิชา: ${subject.code} | หัวข้อ: ${subject.topic || '-'}`;
-
       renderQuestions();
     }
 
+    /* แสดงรายการข้อสอบ รองรับ Mobile UI */
     function renderQuestions() {
       const subject = subjectsData.find(s => s.id === currentSubjectId);
       const qContainer = document.getElementById('questionList');
       qContainer.innerHTML = '';
-
       if (!subject.questions || subject.questions.length === 0) {
         qContainer.innerHTML = `<div class="text-center py-10 bg-white rounded-xl shadow text-slate-400">ยังไม่มีข้อสอบในรายวิชานี้</div>`;
         return;
       }
-
-     subject.questions.forEach((q, index) => {
-  let choicesText = '-';
-  if (q.type === 'เลือกตอบ') {
-    choicesText = `1) ${q.choice1 || '-'} 2) ${q.choice2 || '-'} 3) ${q.choice3 || '-'} 4) ${q.choice4 || '-'}`;
-  } else if (q.type === 'ถูกผิด') {
-    choicesText = `1) ถูก  2) ผิด`;
-  } else {
-    const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
-    choicesText = opts.length > 0 ? opts.map((c, i) => `${i + 1}) ${c}`).join('  ') : '-';
-  }
-
-  qContainer.innerHTML += `
-    <div class="bg-white p-3 sm:p-5 rounded-xl shadow flex flex-col sm:flex-row justify-between items-start gap-3 border-l-4 border-indigo-500 mb-3">
-      
-      <!-- ส่วนเนื้อหาข้อสอบ -->
-      <div class="w-full sm:flex-1 break-words">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="font-bold text-indigo-700 text-sm sm:text-base">ข้อที่ ${index + 1}</span>
-          <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md font-medium border border-indigo-200">แบบ${q.type || 'เลือกตอบ'}</span>
-        </div>
-        
-        <p class="mt-2 text-slate-800 font-medium text-sm sm:text-base leading-relaxed break-words">${q.question || '-'}</p>
-        
-        <div class="text-xs text-slate-500 mt-2.5 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-          <p class="break-words"><strong>ตัวเลือก:</strong> ${choicesText}</p>
-          <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1 border-t border-slate-200/60 mt-1">
-            <span><strong>เฉลย:</strong> <span class="text-indigo-600 font-semibold">${q.answer || '-'}</span></span>
-            <span><strong>ระดับพฤติกรรม:</strong> ${q.behavior || '-'}</span>
+      subject.questions.forEach((q, index) => {
+        let choicesText = '-';
+        if (q.type === 'เลือกตอบ') {
+          choicesText = `1) ${q.choice1||'-'} 2) ${q.choice2||'-'} 3) ${q.choice3||'-'} 4) ${q.choice4||'-'}`;
+        } else if (q.type === 'ถูกผิด') {
+          choicesText = `1) ถูก  2) ผิด`;
+        } else {
+          const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
+          choicesText = opts.length > 0 ? opts.map((c, i) => `${i+1}) ${c}`).join('  ') : '-';
+        }
+        qContainer.innerHTML += `
+          <div class="bg-white p-3.5 sm:p-5 rounded-xl shadow flex flex-col sm:flex-row justify-between items-start gap-3 border-l-4 border-indigo-500">
+            <div class="w-full sm:flex-1 break-words">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-indigo-700 text-sm sm:text-base">ข้อที่ ${index + 1}</span>
+                <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-medium border border-indigo-200">แบบ${q.type || 'เลือกตอบ'}</span>
+              </div>
+              <p class="mt-2 text-slate-800 font-medium text-sm sm:text-base leading-relaxed break-words">${q.question || '-'}</p>
+              <div class="text-xs text-slate-500 mt-2.5 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                <p class="break-words"><strong>ตัวเลือก:</strong> ${choicesText}</p>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 pt-1 border-t border-slate-200/60 mt-1">
+                  <span><strong>เฉลย:</strong> <span class="text-indigo-600 font-semibold">${q.answer || '-'}</span></span>
+                  <span><strong>ระดับพฤติกรรม:</strong> ${q.behavior || '-'}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex sm:flex-col justify-end items-center gap-1 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
+              <button onclick="openQuestionModal(${index})" class="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-amber-50 sm:bg-transparent text-amber-600 hover:text-amber-700 p-2 rounded-lg text-xs font-medium transition">
+                <i class="fa-solid fa-pen"></i>
+                <span class="sm:hidden">แก้ไข</span>
+              </button>
+              <button onclick="deleteQuestion('${q.id}')" class="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-red-50 sm:bg-transparent text-red-500 hover:text-red-700 p-2 rounded-lg text-xs font-medium transition">
+                <i class="fa-solid fa-trash"></i>
+                <span class="sm:hidden">ลบ</span>
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- ส่วนปุ่มจัดการ (แก้ไข/ลบ) -->
-      <div class="flex sm:flex-col justify-end items-center gap-1 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
-        <button onclick="openQuestionModal(${index})" class="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-amber-50 sm:bg-transparent text-amber-600 hover:text-amber-700 p-2 rounded-lg text-xs font-medium transition">
-          <i class="fa-solid fa-pen"></i>
-          <span class="sm:hidden">แก้ไข</span>
-        </button>
-        <button onclick="deleteQuestion('${q.id}')" class="flex-1 sm:flex-none flex items-center justify-center gap-1 bg-red-50 sm:bg-transparent text-red-500 hover:text-red-700 p-2 rounded-lg text-xs font-medium transition">
-          <i class="fa-solid fa-trash"></i>
-          <span class="sm:hidden">ลบ</span>
-        </button>
-      </div>
-
-    </div>
-  `;
-});
+        `;
+      });
+    }
 
     function handleTypeChange(qData = {}) {
-      const type = document.getElementById('q-type').value;
+      const typeSelect = document.getElementById('q-type');
+      if (!typeSelect) return;
+      const type = typeSelect.value;
       const choicesBox = document.getElementById('choices-container');
-      
+     
       if (type === 'เลือกตอบ') {
         choicesBox.innerHTML = `
-          <div><label class="font-bold">ตัวเลือก 1</label><input id="q-c1" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice1 || ''}"></div>
-          <div><label class="font-bold">ตัวเลือก 2</label><input id="q-c2" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice2 || ''}"></div>
-          <div><label class="font-bold">ตัวเลือก 3</label><input id="q-c3" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice3 || ''}"></div>
-          <div><label class="font-bold">ตัวเลือก 4</label><input id="q-c4" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice4 || ''}"></div>
+          <div><label class="font-bold text-slate-600">ตัวเลือก 1</label><input id="q-c1" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${qData.choice1 || ''}"></div>
+          <div><label class="font-bold text-slate-600">ตัวเลือก 2</label><input id="q-c2" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${qData.choice2 || ''}"></div>
+          <div><label class="font-bold text-slate-600">ตัวเลือก 3</label><input id="q-c3" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${qData.choice3 || ''}"></div>
+          <div><label class="font-bold text-slate-600">ตัวเลือก 4</label><input id="q-c4" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${qData.choice4 || ''}"></div>
         `;
       } else if (type === 'ถูกผิด') {
         choicesBox.innerHTML = `
-          <div class="col-span-2 bg-slate-50 p-2.5 rounded border text-slate-600 font-medium text-xs">
+          <div class="col-span-full bg-slate-50 p-2.5 rounded border text-slate-600 font-medium text-xs">
             <strong>ตัวเลือกอัตโนมัติ:</strong> 1) ถูก &nbsp;&nbsp;&nbsp; 2) ผิด
           </div>
         `;
       } else {
         choicesBox.innerHTML = `
-          <div class="col-span-2 space-y-2">
+          <div class="col-span-full space-y-2">
             <div class="flex justify-between items-center mb-1">
-              <span class="text-slate-500 italic">เพิ่มตัวเลือก/คำตอบย่อย (สูงสุด 4 ช่อง)</span>
+              <span class="text-slate-500 italic text-[11px]">เพิ่มตัวเลือก/คำตอบย่อย (สูงสุด 4 ช่อง)</span>
               <button type="button" onclick="addDynamicOption()" id="btnAddOption" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs transition">
                 <i class="fa-solid fa-plus mr-1"></i> เพิ่มตัวเลือก
               </button>
@@ -528,7 +512,6 @@
             <div id="dynamic-inputs-list" class="space-y-2"></div>
           </div>
         `;
-
         const existingChoices = [qData.choice1, qData.choice2, qData.choice3, qData.choice4].filter(c => c && c.trim() !== '');
         if (existingChoices.length > 0) {
           existingChoices.forEach(val => addDynamicOption(val));
@@ -541,18 +524,16 @@
     function addDynamicOption(value = '') {
       const container = document.getElementById('dynamic-inputs-list');
       if (!container) return;
-
       const currentInputs = container.querySelectorAll('.dynamic-opt-input');
       if (currentInputs.length >= 4) {
         Swal.showValidationMessage('สามารถเพิ่มตัวเลือกได้สูงสุด 4 ช่องเท่านั้น');
         return;
       }
-
       const optId = `q-dyn-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       const div = document.createElement('div');
       div.className = 'flex items-center space-x-2 dynamic-opt-item';
       div.innerHTML = `
-        <span class="text-xs font-bold text-slate-500 w-12">ช่องที่ ${container.children.length + 1}:</span>
+        <span class="text-xs font-bold text-slate-500 w-14 shrink-0">ช่องที่ ${container.children.length + 1}:</span>
         <input id="${optId}" class="swal2-input !mt-0 !h-9 text-xs flex-1 dynamic-opt-input" placeholder="ระบุตัวเลือก/ข้อความ" value="${value}">
         <button type="button" onclick="removeDynamicOption(this)" class="text-red-500 hover:text-red-700 p-1.5 text-xs">
           <i class="fa-solid fa-trash"></i>
@@ -578,7 +559,6 @@
         const label = item.querySelector('span');
         if (label) label.innerText = `ช่องที่ ${index + 1}:`;
       });
-
       const btnAdd = document.getElementById('btnAddOption');
       if (btnAdd) {
         btnAdd.disabled = items.length >= 4;
@@ -590,160 +570,160 @@
       }
     }
 
+    /* ฟอร์มสร้าง/แก้ไขข้อสอบแบบ Responsive */
     async function openQuestionModal(qIndex = null) {
-  const subject = subjectsData.find(s => s.id === currentSubjectId);
-  const q = (qIndex !== null) ? subject.questions[qIndex] : {};
-  const currentType = q.type || 'เลือกตอบ';
-
-  const { value: f } = await Swal.fire({
-    title: qIndex !== null ? `แก้ไขข้อสอบข้อที่ ${qIndex + 1}` : `เพิ่มข้อสอบใหม่`,
-    width: '800px',
-    html: `
-      <div class="text-left text-xs grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[65vh] overflow-y-auto p-2">
-        <div>
-          <label class="font-bold">1. รูปแบบข้อสอบ</label>
-          <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs" onchange="handleTypeChange()">
-            <option value="เลือกตอบ" ${currentType==='เลือกตอบ'?'selected':''}>เลือกตอบ (Multiple choices)</option>
-            <option value="ถูกผิด" ${currentType==='ถูกผิด'?'selected':''}>ถูกผิด</option>
-            <option value="จับคู่" ${currentType==='จับคู่'?'selected':''}>จับคู่</option>
-            <option value="อัตนัย" ${currentType==='อัตนัย'?'selected':''}>อัตนัย</option>
-            <option value="เติมคำ" ${currentType==='เติมคำ'?'selected':''}>เติมคำ</option>
-          </select>
-        </div>
-        <div>
-          <label class="font-bold">2. กลุ่มสาระการเรียนรู้</label>
-          <input id="q-group" class="swal2-input !mt-1 !h-9 text-xs" value="${q.group||''}">
-        </div>
-        <div>
-          <label class="font-bold">3. ระดับชั้น</label>
-          <input id="q-grade" class="swal2-input !mt-1 !h-9 text-xs" value="${q.grade||''}">
-        </div>
-        <div>
-          <label class="font-bold">4. สาระที่</label>
-          <input id="q-strand" class="swal2-input !mt-1 !h-9 text-xs" value="${q.strand||''}">
-        </div>
-        <div>
-          <label class="font-bold">5. มาตรฐานการเรียนรู้ที่</label>
-          <input id="q-standard" class="swal2-input !mt-1 !h-9 text-xs" value="${q.standard||''}">
-        </div>
-        <div>
-          <label class="font-bold">6. ตัวชี้วัดที่</label>
-          <input id="q-indicator" class="swal2-input !mt-1 !h-9 text-xs" value="${q.indicator||''}">
-        </div>
-        <div class="col-span-2">
-          <label class="font-bold">7. ระดับพฤติกรรมที่ต้องการวัด</label>
-          <select id="q-behavior" class="swal2-input !mt-1 !h-9 text-xs">
-            <option value="ความจำ" ${q.behavior==='ความจำ'?'selected':''}>ความจำ</option>
-            <option value="ความเข้าใจ" ${q.behavior==='ความเข้าใจ'?'selected':''}>ความเข้าใจ</option>
-            <option value="นำไปใช้" ${q.behavior==='นำไปใช้'?'selected':''}>นำไปใช้</option>
-            <option value="วิเคราะห์" ${q.behavior==='วิเคราะห์'?'selected':''}>วิเคราะห์</option>
-            <option value="ประเมินค่า" ${q.behavior==='ประเมินค่า'?'selected':''}>ประเมินค่า</option>
-            <option value="สร้างสรรค์" ${q.behavior==='สร้างสรรค์'?'selected':''}>สร้างสรรค์</option>
-          </select>
-        </div>
-        <div class="col-span-2">
-          <label class="font-bold">8. วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</label>
-          <input id="q-objective" class="swal2-input !mt-1 !h-9 text-xs" value="${q.objective||''}">
-        </div>
-        <div class="col-span-2">
-          <label class="font-bold">9. โจทย์ / คำถาม</label>
-          <textarea id="q-question" class="swal2-textarea !mt-1 text-xs" rows="3">${q.question||''}</textarea>
-        </div>
-        
-        <div class="col-span-2 border-t pt-2 mt-1">
-          <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
-          <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
-        </div>
-
-        <!-- แยกส่วนอธิบายเฉลย ถูก vs ผิด -->
-        <div class="col-span-2 border-t pt-3 mt-1 bg-slate-50 p-2.5 rounded-lg space-y-2">
-          <div>
-            <label class="font-bold text-emerald-700">เฉลย (ตัวเลือกที่ถูก)</label>
-            <input id="q-answer" class="swal2-input !mt-1 !h-9 text-xs" placeholder="เช่น 1 หรือ ข้อ 1" value="${q.answer||''}">
-          </div>
-          <div>
-            <label class="font-bold text-emerald-700">เหตุผล (ทำไมข้อนี้ถึงถูก)</label>
-            <textarea id="q-reason" class="swal2-textarea !mt-1 text-xs" rows="2" placeholder="อธิบายสาเหตุที่ตัวเลือกนี้ถูกต้อง">${q.reason||''}</textarea>
-          </div>
-          <div>
-            <label class="font-bold text-rose-700">คำอธิบายข้อที่ผิด</label>
-            <textarea id="q-wrong-reason" class="swal2-textarea !mt-1 text-xs" rows="2" placeholder="อธิบายว่าตัวเลือกอื่นผิดเพราะอะไร">${q.wrongReason||''}</textarea>
-          </div>
-        </div>
-      </div>
-    `,
-    didOpen: () => {
-      handleTypeChange(q);
-    },
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'บันทึกข้อสอบ',
-    cancelButtonText: 'ยกเลิก',
-    preConfirm: () => {
-      const typeVal = document.getElementById('q-type').value;
-      let c1 = '', c2 = '', c3 = '', c4 = '';
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
+      const q = (qIndex !== null) ? subject.questions[qIndex] : {};
+      const currentType = q.type || 'เลือกตอบ';
       
-      if (typeVal === 'เลือกตอบ') {
-        c1 = document.getElementById('q-c1') ? document.getElementById('q-c1').value : '';
-        c2 = document.getElementById('q-c2') ? document.getElementById('q-c2').value : '';
-        c3 = document.getElementById('q-c3') ? document.getElementById('q-c3').value : '';
-        c4 = document.getElementById('q-c4') ? document.getElementById('q-c4').value : '';
-      } else if (typeVal === 'ถูกผิด') {
-        c1 = 'ถูก';
-        c2 = 'ผิด';
-      } else {
-        const dynInputs = document.querySelectorAll('.dynamic-opt-input');
-        if (dynInputs[0]) c1 = dynInputs[0].value;
-        if (dynInputs[1]) c2 = dynInputs[1].value;
-        if (dynInputs[2]) c3 = dynInputs[2].value;
-        if (dynInputs[3]) c4 = dynInputs[3].value;
-      }
+      const { value: f } = await Swal.fire({
+        title: qIndex !== null ? `แก้ไขข้อสอบข้อที่ ${qIndex + 1}` : `เพิ่มข้อสอบใหม่`,
+        width: '95%',
+        maxWidth: '800px',
+        html: `
+          <div class="text-left text-xs grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto p-1 pr-2">
+            <div>
+              <label class="font-bold text-slate-700">1. รูปแบบข้อสอบ</label>
+              <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs !w-full" onchange="handleTypeChange()">
+                <option value="เลือกตอบ" ${currentType==='เลือกตอบ'?'selected':''}>เลือกตอบ (Multiple choices)</option>
+                <option value="ถูกผิด" ${currentType==='ถูกผิด'?'selected':''}>ถูกผิด</option>
+                <option value="จับคู่" ${currentType==='จับคู่'?'selected':''}>จับคู่</option>
+                <option value="อัตนัย" ${currentType==='อัตนัย'?'selected':''}>อัตนัย</option>
+                <option value="เติมคำ" ${currentType==='เติมคำ'?'selected':''}>เติมคำ</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold text-slate-700">2. กลุ่มสาระการเรียนรู้</label>
+              <input id="q-group" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.group||''}">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700">3. ระดับชั้น</label>
+              <input id="q-grade" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.grade||''}">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700">4. สาระที่</label>
+              <input id="q-strand" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.strand||''}">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700">5. มาตรฐานการเรียนรู้ที่</label>
+              <input id="q-standard" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.standard||''}">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700">6. ตัวชี้วัดที่</label>
+              <input id="q-indicator" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.indicator||''}">
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="font-bold text-slate-700">7. ระดับพฤติกรรมที่ต้องการวัด</label>
+              <select id="q-behavior" class="swal2-input !mt-1 !h-9 text-xs !w-full">
+                <option value="ความจำ" ${q.behavior==='ความจำ'?'selected':''}>ความจำ</option>
+                <option value="ความเข้าใจ" ${q.behavior==='ความเข้าใจ'?'selected':''}>ความเข้าใจ</option>
+                <option value="นำไปใช้" ${q.behavior==='นำไปใช้'?'selected':''}>นำไปใช้</option>
+                <option value="วิเคราะห์" ${q.behavior==='วิเคราะห์'?'selected':''}>วิเคราะห์</option>
+                <option value="ประเมินค่า" ${q.behavior==='ประเมินค่า'?'selected':''}>ประเมินค่า</option>
+                <option value="สร้างสรรค์" ${q.behavior==='สร้างสรรค์'?'selected':''}>สร้างสรรค์</option>
+              </select>
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="font-bold text-slate-700">8. วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</label>
+              <input id="q-objective" class="swal2-input !mt-1 !h-9 text-xs !w-full" value="${q.objective||''}">
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="font-bold text-slate-700">9. โจทย์ / คำถาม</label>
+              <textarea id="q-question" class="swal2-textarea !mt-1 text-xs !w-full" rows="3">${q.question||''}</textarea>
+            </div>
+           
+            <div class="col-span-1 md:col-span-2 border-t pt-2 mt-1">
+              <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
+              <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+            </div>
 
-      return {
-        id: q.id || 'q_' + Date.now(),
-        number: (qIndex !== null) ? qIndex + 1 : (subject.questions ? subject.questions.length + 1 : 1),
-        type: typeVal,
-        group: document.getElementById('q-group').value,
-        grade: document.getElementById('q-grade').value,
-        strand: document.getElementById('q-strand').value,
-        standard: document.getElementById('q-standard').value,
-        indicator: document.getElementById('q-indicator').value,
-        behavior: document.getElementById('q-behavior').value,
-        objective: document.getElementById('q-objective').value,
-        question: document.getElementById('q-question').value,
-        choice1: c1,
-        choice2: c2,
-        choice3: c3,
-        choice4: c4,
-        answer: document.getElementById('q-answer').value,
-        reason: document.getElementById('q-reason').value,
-        wrongReason: document.getElementById('q-wrong-reason').value
+            <!-- แยกส่วนอธิบายเฉลย ถูก vs ผิด -->
+            <div class="col-span-1 md:col-span-2 border-t pt-3 mt-1 bg-slate-50 p-2.5 rounded-lg space-y-2">
+              <div>
+                <label class="font-bold text-emerald-700">เฉลย (ตัวเลือกที่ถูก)</label>
+                <input id="q-answer" class="swal2-input !mt-1 !h-9 text-xs !w-full" placeholder="เช่น 1 หรือ ข้อ 1" value="${q.answer||''}">
+              </div>
+              <div>
+                <label class="font-bold text-emerald-700">เหตุผล (ทำไมข้อนี้ถึงถูก)</label>
+                <textarea id="q-reason" class="swal2-textarea !mt-1 text-xs !w-full" rows="2" placeholder="อธิบายสาเหตุที่ตัวเลือกนี้ถูกต้อง">${q.reason||''}</textarea>
+              </div>
+              <div>
+                <label class="font-bold text-rose-700">คำอธิบายข้อที่ผิด</label>
+                <textarea id="q-wrong-reason" class="swal2-textarea !mt-1 text-xs !w-full" rows="2" placeholder="อธิบายว่าตัวเลือกอื่นผิดเพราะอะไร">${q.wrongReason||''}</textarea>
+              </div>
+            </div>
+          </div>
+        `,
+        didOpen: () => {
+          handleTypeChange(q);
+        },
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'บันทึกข้อสอบ',
+        cancelButtonText: 'ยกเลิก',
+        preConfirm: () => {
+          const typeVal = document.getElementById('q-type').value;
+          let c1 = '', c2 = '', c3 = '', c4 = '';
+         
+          if (typeVal === 'เลือกตอบ') {
+            c1 = document.getElementById('q-c1') ? document.getElementById('q-c1').value : '';
+            c2 = document.getElementById('q-c2') ? document.getElementById('q-c2').value : '';
+            c3 = document.getElementById('q-c3') ? document.getElementById('q-c3').value : '';
+            c4 = document.getElementById('q-c4') ? document.getElementById('q-c4').value : '';
+          } else if (typeVal === 'ถูกผิด') {
+            c1 = 'ถูก';
+            c2 = 'ผิด';
+          } else {
+            const dynInputs = document.querySelectorAll('.dynamic-opt-input');
+            if (dynInputs[0]) c1 = dynInputs[0].value;
+            if (dynInputs[1]) c2 = dynInputs[1].value;
+            if (dynInputs[2]) c3 = dynInputs[2].value;
+            if (dynInputs[3]) c4 = dynInputs[3].value;
+          }
+          return {
+            id: q.id || 'q_' + Date.now(),
+            number: (qIndex !== null) ? qIndex + 1 : (subject.questions ? subject.questions.length + 1 : 1),
+            type: typeVal,
+            group: document.getElementById('q-group').value,
+            grade: document.getElementById('q-grade').value,
+            strand: document.getElementById('q-strand').value,
+            standard: document.getElementById('q-standard').value,
+            indicator: document.getElementById('q-indicator').value,
+            behavior: document.getElementById('q-behavior').value,
+            objective: document.getElementById('q-objective').value,
+            question: document.getElementById('q-question').value,
+            choice1: c1,
+            choice2: c2,
+            choice3: c3,
+            choice4: c4,
+            answer: document.getElementById('q-answer').value,
+            reason: document.getElementById('q-reason').value,
+            wrongReason: document.getElementById('q-wrong-reason').value
+          }
+        }
+      });
+
+      if (f) {
+        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
+        });
+        await loadDataFromSheets();
+        renderQuestions();
+        Swal.fire('สำเร็จ', 'บันทึกข้อสอบเรียบร้อยแล้ว', 'success');
       }
     }
-  });
-
-  if (f) {
-    Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
-    await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
-    });
-    await loadDataFromSheets();
-    renderQuestions();
-    Swal.fire('สำเร็จ', 'บันทึกข้อสอบเรียบร้อยแล้ว', 'success');
-  }
-}
 
     async function deleteQuestion(qId) {
       const result = await Swal.fire({
         title: 'ยืนยันการลบข้อสอบ?',
-        text: 'ข้อสอบจะถูกลบออก ทันที',
+        text: 'ข้อสอบจะถูกลบออกทันที',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ลบ',
         cancelButtonText: 'ยกเลิก'
       });
-
       if (result.isConfirmed) {
         Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
@@ -775,10 +755,9 @@
           'ตัวเลือก4': 'ไม่มีข้อถูก',
           'เฉลย': '1',
           'เหตุผล': 'เซลล์พืชมีผนังเซลล์เป็นส่วนประกอบภายนอก',
-          'คำอธิบายข้อที่ผิด': 'ไม่ขออธิบาย555'
+          'คำอธิบายข้อที่ผิด': 'ไลโซโซมและเซนทริโอลพบในเซลล์สัตว์'
         }
       ];
-
       const ws = XLSX.utils.json_to_sheet(templateData, { header: REQUIRED_HEADERS });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Template_Questions");
@@ -789,9 +768,11 @@
     async function openExcelModal() {
       const { value: file } = await Swal.fire({
         title: '<strong>นำเข้าข้อสอบผ่าน Excel</strong>',
+        width: '90%',
+        maxWidth: '500px',
         html: `
           <div class="text-left text-xs space-y-3 p-1">
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg flex items-center justify-between">
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
                 <p class="font-bold">ยังไม่มีไฟล์แม่แบบ?</p>
                 <p class="text-[11px] text-amber-700">ดาวน์โหลดแม่แบบ Excel เพื่อกรอกข้อมูลให้ถูกต้องตามโครงสร้าง</p>
@@ -800,7 +781,6 @@
                 <i class="fa-solid fa-download mr-1"></i> โหลดแม่แบบ
               </button>
             </div>
-
             <div class="mt-4">
               <label class="block font-bold text-slate-700 mb-1">เลือกไฟล์ Excel (.xlsx, .xls)</label>
               <input type="file" id="swalExcelFile" accept=".xlsx, .xls" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 border rounded-lg p-1">
@@ -821,7 +801,6 @@
           return fileInput.files[0];
         }
       });
-
       if (file) {
         processExcelFile(file);
       }
@@ -836,8 +815,8 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const firstSheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[firstSheetName];
-
-          const headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] || [];
+          const rawHeaders = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] || [];
+          const headers = rawHeaders.map(h => String(h).trim());
           const missingHeaders = REQUIRED_HEADERS.filter(h => !headers.includes(h));
 
           if (missingHeaders.length > 0) {
@@ -857,21 +836,18 @@
             });
             return;
           }
-
           const rows = XLSX.utils.sheet_to_json(worksheet);
-          
+         
           if (rows.length === 0) {
             Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลข้อสอบในไฟล์ Excel', 'warning');
             return;
           }
-
-          Swal.fire({ 
-            title: 'กำลังนำ Load...', 
+          Swal.fire({
+            title: 'กำลังนำเข้า...',
             text: `กำลังบันทึกข้อมูลทั้งหมด ${rows.length} ข้อ`,
-            allowOutsideClick: false, 
-            didOpen: () => Swal.showLoading() 
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
           });
-
           for (let i = 0; i < rows.length; i++) {
             const r = rows[i];
             const qObj = {
@@ -894,191 +870,219 @@
               reason: String(r['เหตุผล'] || ''),
               wrongReason: String(r['คำอธิบายข้อที่ผิด'] || '')
             };
-
             await fetch(GAS_URL, {
               method: 'POST',
               body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: qObj })
             });
           }
-
           await loadDataFromSheets();
           renderQuestions();
           Swal.fire('สำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อ เรียบร้อยแล้ว`, 'success');
-
         } catch (err) {
           Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ Excel ได้: ' + err.message, 'error');
         }
       };
-
       reader.readAsArrayBuffer(file);
     }
 
-    function generateCardHTML(subject, q, num) {
-  const qType = q.type || 'เลือกตอบ';
-  
-  const isMc = (qType === 'เลือกตอบ');
-  const isTf = (qType === 'ถูกผิด');
-  const isMatch = (qType === 'จับคู่');
-  const isFill = (qType === 'เติมคำ');
-  const isSubjective = (qType === 'อัตนัย');
+    /* ฟังก์ชันพิมพ์ชุดข้อสอบ (กระดาษ A4 แนวตั้ง 1 หน้ามี 2 การ์ดข้อสอบ) */
+    function printExamCards() {
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
+      if (!subject || !subject.questions || subject.questions.length === 0) {
+        Swal.fire('ไม่พบข้อสอบ', 'รายวิชานี้ยังไม่มีข้อสอบสำหรับพิมพ์', 'warning');
+        return;
+      }
 
-  const behaviors = ['ความจำ', 'ความเข้าใจ', 'นำไปใช้', 'วิเคราะห์', 'ประเมินค่า', 'สร้างสรรค์'];
-  const bCheck = {};
-  behaviors.forEach(b => {
-    bCheck[b] = (q.behavior === b);
-  });
+      const printArea = document.getElementById('print-area');
+      let cardsHTML = '';
 
-  let choicesHTML = '';
-  if (isMc) {
-    choicesHTML = `
-      <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 pl-2 text-xs">
-        <div><b>1.</b> ${q.choice1 || ''}</div>
-        <div><b>2.</b> ${q.choice2 || ''}</div>
-        <div><b>3.</b> ${q.choice3 || ''}</div>
-        <div><b>4.</b> ${q.choice4 || ''}</div>
-      </div>
-    `;
-  } else if (isTf) {
-    choicesHTML = `<div class="mt-1 pl-2 text-xs">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
-  } else {
-    const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
-    if (opts.length > 0) {
-      choicesHTML = `<div class="mt-1 pl-2 space-y-0.5 text-xs">` + opts.map((c, i) => `<div><b>${i + 1})</b> ${c}</div>`).join('') + `</div>`;
-    } else {
-      choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500 text-xs">(- รูปแบบ${qType} -)</div>`;
+      for (let i = 0; i < subject.questions.length; i += 2) {
+        cardsHTML += '<div class="a4-page page-break">';
+        cardsHTML += generateCardHTML(subject, subject.questions[i], i + 1);
+
+        if (i + 1 < subject.questions.length) {
+          cardsHTML += generateCardHTML(subject, subject.questions[i + 1], i + 2);
+        }
+        cardsHTML += '</div>';
+      }
+
+      printArea.innerHTML = cardsHTML;
+      printArea.classList.remove('hidden');
+
+      window.print();
+
+      setTimeout(() => {
+        printArea.classList.add('hidden');
+      }, 500);
     }
-  }
 
-  return `
-    <div class="card-container border-2 border-black p-3 mb-4 bg-white text-black text-xs font-sans">
-      
-      <!-- Header: บัตรข้อสอบ (Item Card) + กล่องข้อขวาบน -->
-      <div class="flex justify-between items-center pb-2 mb-2">
-        <div class="w-1/4"></div>
-        <div class="w-2/4 text-center font-bold text-sm">บัตรข้อสอบ (Item Card)</div>
-        <div class="w-1/4 flex justify-end">
-          <div class="border border-black px-3 py-0.5 font-bold text-xs flex items-center gap-1.5 bg-gray-50">
-            <span>ข้อที่</span>
-            <span class="text-base font-extrabold">${num}</span>
+    /* ฟังก์ชันสร้าง HTML สำหรับบัตรข้อสอบแต่ละใบ (ตามแบบรูปภาพอ้างอิง) */
+    function generateCardHTML(subject, q, num) {
+      const qType = q.type || 'เลือกตอบ';
+     
+      const isMc = (qType === 'เลือกตอบ');
+      const isTf = (qType === 'ถูกผิด');
+      const isMatch = (qType === 'จับคู่');
+      const isFill = (qType === 'เติมคำ');
+      const isSubjective = (qType === 'อัตนัย');
+
+      const behaviors = ['ความจำ', 'ความเข้าใจ', 'นำไปใช้', 'วิเคราะห์', 'ประเมินค่า', 'สร้างสรรค์'];
+      const bCheck = {};
+      behaviors.forEach(b => {
+        bCheck[b] = (q.behavior === b);
+      });
+
+      let choicesHTML = '';
+      if (isMc) {
+        choicesHTML = `
+          <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-1 pl-2 text-xs">
+            <div>1. ${q.choice1 || ''}</div>
+            <div>2. ${q.choice2 || ''}</div>
+            <div>3. ${q.choice3 || ''}</div>
+            <div>4. ${q.choice4 || ''}</div>
           </div>
-        </div>
-      </div>
+        `;
+      } else if (isTf) {
+        choicesHTML = `<div class="mt-1 pl-2 text-xs">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
+      } else {
+        const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
+        if (opts.length > 0) {
+          choicesHTML = `<div class="mt-1 pl-2 space-y-0.5 text-xs">` + opts.map((c, i) => `<div>${i + 1}) ${c}</div>`).join('') + `</div>`;
+        } else {
+          choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500 text-xs">(- รูปแบบ${qType} -)</div>`;
+        }
+      }
 
-      <!-- Main Body Grid Layout -->
-      <div class="grid grid-cols-12 gap-3 border border-gray-400 p-2">
-        
-        <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น (8/12) -->
-        <div class="col-span-8 border-r border-gray-400 pr-3 flex flex-col justify-between">
-          <div>
-            <!-- ข้อ 1. รูปแบบข้อสอบ -->
-            <div class="flex items-start gap-1 leading-tight">
-              <span class="font-bold whitespace-nowrap">1.รูปแบบข้อสอบ</span>
-              <div class="flex-1">
-                <span class="inline-block mr-2">1. <span class="radio-icon ${isMc ? 'checked' : ''}"></span> แบบเลือกตอบ (Multiple choices)</span>
-                <div class="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
-                  <span>2. แบบอื่น ๆ</span>
-                  <span><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
-                  <span><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
-                  <span><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
-                  <span><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
+      return `
+        <div class="card-container">
+          
+          <!-- Header: ชื่อบัตรข้อสอบ + กล่องข้อขวาบน -->
+          <div class="card-header-box">
+            <div class="w-1/4"></div>
+            <div class="w-2/4 text-center font-bold text-sm">บัตรข้อสอบ (Item Card)</div>
+            <div class="w-1/4 flex justify-end">
+              <div class="border border-black px-3 py-0.5 font-bold text-xs flex items-center gap-1.5 bg-white">
+                <span>ข้อที่</span>
+                <span class="text-sm font-bold">${num}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Body Grid Layout (ตารางสองคอลัมน์ใหญ่) -->
+          <div class="card-main-grid">
+            
+            <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น -->
+            <div class="card-left-col">
+              <div>
+                <!-- ข้อ 1. รูปแบบข้อสอบ -->
+                <div class="flex items-start gap-1 leading-tight">
+                  <span class="font-bold whitespace-nowrap">1.รูปแบบข้อสอบ</span>
+                  <div class="flex-1">
+                    <span class="inline-block mr-2">1. <span class="radio-icon ${isMc ? 'checked' : ''}"></span> แบบเลือกตอบ (Multiple choices)</span>
+                    <div class="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
+                      <span>2. แบบอื่น ๆ</span>
+                      <span><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
+                      <span><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
+                      <span><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
+                      <span><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ข้อ 2-6. ข้อมูลวิชา -->
+                <div class="grid grid-cols-12 gap-x-2 gap-y-0.5 mt-1.5 leading-tight">
+                  <div class="col-span-4"><span class="font-bold">2.รายวิชา</span> ${subject.name || ''}</div>
+                  <div class="col-span-3"><span class="font-bold">รหัส</span> ${subject.code || ''}</div>
+                  <div class="col-span-5"><span class="font-bold">กลุ่มสาระการเรียนรู้</span> ${q.group || ''}</div>
+                  
+                  <div class="col-span-12"><span class="font-bold">3.ระดับชั้น</span> ${q.grade || ''}</div>
+                  <div class="col-span-12"><span class="font-bold">4.สาระที่</span> ${q.strand || ''}</div>
+                  <div class="col-span-12"><span class="font-bold">5.มาตรฐานการเรียนรู้ที่</span> ${q.standard || ''}</div>
+                  <div class="col-span-12"><span class="font-bold">6.ตัวชี้วัดที่</span> ${q.indicator || ''}</div>
+                </div>
+
+                <!-- ข้อ 7. ระดับพฤติกรรม -->
+                <div class="mt-1.5">
+                  <span class="font-bold">7.ระดับพฤติกรรมที่ต้องการวัด</span>
+                  <div class="grid grid-cols-3 gap-y-0.5 pl-4 mt-0.5 leading-tight">
+                    <div><span class="radio-icon ${bCheck['ความจำ'] ? 'checked' : ''}"></span> ความจำ</div>
+                    <div><span class="radio-icon ${bCheck['ความเข้าใจ'] ? 'checked' : ''}"></span> ความเข้าใจ</div>
+                    <div><span class="radio-icon ${bCheck['นำไปใช้'] ? 'checked' : ''}"></span> นำไปใช้</div>
+                    <div><span class="radio-icon ${bCheck['วิเคราะห์'] ? 'checked' : ''}"></span> วิเคราะห์</div>
+                    <div><span class="radio-icon ${bCheck['ประเมินค่า'] ? 'checked' : ''}"></span> ประเมินค่า</div>
+                    <div><span class="radio-icon ${bCheck['สร้างสรรค์'] ? 'checked' : ''}"></span> สร้างสรรค์</div>
+                  </div>
+                </div>
+
+                <!-- ข้อ 8. วัตถุประสงค์ -->
+                <div class="mt-1.5">
+                  <span class="font-bold">8.วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</span>
+                  <div class="pl-2 mt-0.5">${q.objective || ''}</div>
+                </div>
+
+                <!-- ข้อ 9. โจทย์ -->
+                <div class="mt-2">
+                  <span class="font-bold">9.โจทย์/คำถาม</span>
+                  <div class="pl-2 mt-0.5 font-medium leading-relaxed">${q.question || ''}</div>
+                </div>
+
+                <!-- ข้อ 10. ตัวเลือก -->
+                <div class="mt-2">
+                  <span class="font-bold">10.ตัวเลือก</span>
+                  ${choicesHTML}
                 </div>
               </div>
+
+              <!-- ลายเซ็นท้ายการ์ด (ตรงตามรูปภาพอ้างอิง) -->
+              <div class="mt-4 pt-2">
+                <!-- ผู้กลั่นกรองข้อสอบ บรรทัดบน (ฝั่งขวา) -->
+                <div class="flex justify-end mb-2">
+                  <div class="w-1/2 text-center">
+                    <div>( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+                    <div class="font-bold mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+                  </div>
+                </div>
+
+                <!-- บรรทัดล่าง: ผู้ออกข้อสอบ (ซ้าย) & ผู้กลั่นกรองข้อสอบ (ขวา) -->
+                <div class="flex justify-between items-end">
+                  <div class="w-1/2 text-center">
+                    <div class="text-left pl-2 mb-0.5"><span class="font-bold">ลงชื่อ</span></div>
+                    <div>( ${currentUser ? currentUser.username : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )</div>
+                    <div class="font-bold mt-0.5">ผู้ออกข้อสอบ</div>
+                  </div>
+
+                  <div class="w-1/2 text-center">
+                    <div>( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+                    <div class="font-bold mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <!-- ข้อ 2-6. ข้อมูลวิชา -->
-            <div class="grid grid-cols-12 gap-x-2 gap-y-1 mt-2 leading-tight">
-              <div class="col-span-4"><span class="font-bold">2.รายวิชา</span> ${subject.name || ''}</div>
-              <div class="col-span-3"><span class="font-bold">รหัส</span> ${subject.code || ''}</div>
-              <div class="col-span-5"><span class="font-bold">กลุ่มสาระการเรียนรู้</span> ${q.group || ''}</div>
+            <!-- ฝั่งขวา: เฉลย + เหตุผล + คำอธิบายข้อที่ผิด (ต่อกันช่วงกลาง) -->
+            <div class="card-right-col">
+              <div class="text-center font-bold text-sm mb-3">เฉลย</div>
               
-              <div class="col-span-12"><span class="font-bold">3.ระดับชั้น</span> ${q.grade || ''}</div>
-              <div class="col-span-12"><span class="font-bold">4.สาระที่</span> ${q.strand || ''}</div>
-              <div class="col-span-12"><span class="font-bold">5.มาตรฐานการเรียนรู้ที่</span> ${q.standard || ''}</div>
-              <div class="col-span-12"><span class="font-bold">6.ตัวชี้วัดที่</span> ${q.indicator || ''}</div>
-            </div>
+              <div class="font-bold mb-0.5">ตัวเลือกที่ถูกคือ</div>
+              <div class="pl-2 mb-2 font-semibold text-gray-900">${q.answer || ''}</div>
+              
+              <div class="font-bold mb-0.5">เหตุผล</div>
+              <div class="pl-2 mb-5 text-xs leading-relaxed text-gray-800 min-h-[30px]">
+                ${q.reason || ''}
+              </div>
 
-            <!-- ข้อ 7. ระดับพฤติกรรม -->
-            <div class="mt-2">
-              <span class="font-bold">7.ระดับพฤติกรรมที่ต้องการวัด</span>
-              <div class="grid grid-cols-3 gap-y-0.5 pl-4 mt-1 leading-tight">
-                <div><span class="radio-icon ${bCheck['ความจำ'] ? 'checked' : ''}"></span> ความจำ</div>
-                <div><span class="radio-icon ${bCheck['ความเข้าใจ'] ? 'checked' : ''}"></span> ความเข้าใจ</div>
-                <div><span class="radio-icon ${bCheck['นำไปใช้'] ? 'checked' : ''}"></span> นำไปใช้</div>
-                <div><span class="radio-icon ${bCheck['วิเคราะห์'] ? 'checked' : ''}"></span> วิเคราะห์</div>
-                <div><span class="radio-icon ${bCheck['ประเมินค่า'] ? 'checked' : ''}"></span> ประเมินค่า</div>
-                <div><span class="radio-icon ${bCheck['สร้างสรรค์'] ? 'checked' : ''}"></span> สร้างสรรค์</div>
+              <!-- คำอธิบายข้อที่ผิด ย้ายขึ้นมาต่อจากเหตุผลตรงกลางคอลัมน์ -->
+              <div class="font-bold mb-0.5">คำอธิบายข้อที่ผิด</div>
+              <div class="pl-2 text-xs leading-relaxed text-gray-800">
+                ${q.wrongReason || ''}
               </div>
             </div>
 
-            <!-- ข้อ 8. วัตถุประสงค์ -->
-            <div class="mt-2">
-              <span class="font-bold">8.วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</span>
-              <div class="pl-2 mt-0.5">${q.objective || ''}</div>
-            </div>
-
-            <!-- ข้อ 9. โจทย์ -->
-            <div class="mt-3">
-              <span class="font-bold">9.โจทย์/คำถาม</span>
-              <div class="pl-2 mt-0.5 font-medium leading-relaxed">${q.question || ''}</div>
-            </div>
-
-            <!-- ข้อ 10. ตัวเลือก -->
-            <div class="mt-3">
-              <span class="font-bold">10.ตัวเลือก</span>
-              ${choicesHTML}
-            </div>
-          </div>
-
-          <!-- ลายเซ็นท้ายการ์ด (จัดตำแหน่งตามรูปอ้างอิง) -->
-          <div class="mt-6 pt-2">
-            <!-- ผู้กลั่นกรองข้อสอบ บรรทัดบน (ขวามือ) -->
-            <div class="flex justify-end mb-3">
-              <div class="w-1/2 text-center">
-                <div>( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
-                <div class="font-bold mt-1">ผู้กลั่นกรองข้อสอบ</div>
-              </div>
-            </div>
-
-            <!-- แถวล่าง: ผู้ออกข้อสอบ (ซ้าย) & ผู้กลั่นกรองข้อสอบ (ขวา) ตรงกัน -->
-            <div class="flex justify-between items-end">
-              <div class="w-1/2 text-center">
-                <div class="text-left pl-2 mb-1"><span class="font-bold">ลงชื่อ</span></div>
-                <div>( ${currentUser.username || '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'} )</div>
-                <div class="font-bold mt-1">ผู้ออกข้อสอบ</div>
-              </div>
-
-              <div class="w-1/2 text-center">
-                <div>( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
-                <div class="font-bold mt-1">ผู้กลั่นกรองข้อสอบ</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- ฝั่งขวา: เฉลย + เหตุผล + คำอธิบายข้อที่ผิดต่อกันอยู่ตรงกลาง -->
-        <div class="col-span-4 pl-1">
-          <div class="text-center font-bold text-sm mb-4">เฉลย</div>
-          
-          <div class="font-bold mb-1">ตัวเลือกที่ถูกคือ</div>
-          <div class="pl-2 mb-3 font-semibold text-gray-800">${q.answer || ''}</div>
-          
-          <div class="font-bold mb-1">เหตุผล</div>
-          <div class="pl-2 mb-6 text-xs leading-relaxed text-gray-700">
-            ${q.reason || ''}
-          </div>
-
-          <!-- คำอธิบายข้อที่ผิด ย้ายขึ้นมาอยู่กึ่งกลางคอลัมน์แล้ว -->
-          <div class="font-bold mb-1">คำอธิบายข้อที่ผิด</div>
-          <div class="pl-2 text-xs leading-relaxed text-gray-700">
-            ${q.wrongReason || ''}
           </div>
         </div>
-
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
   </script>
 </body>
 </html>
