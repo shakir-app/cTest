@@ -189,7 +189,7 @@
   <footer class="mt-12 py-6 bg-slate-800 text-slate-300 text-center text-sm no-print">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div>
-        <p class="font-medium">created & designed by Shakir เอกวิทย์ สมาน (736904013)</p>
+        <p class="font-medium">created & designed by Shakir</p>
       </div>
       <button onclick="openDonateModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center shadow-lg">
         <i class="fa-solid fa-mug-hot mr-2 text-base"></i> สนับสนุนค่ากาแฟ ☕
@@ -257,7 +257,7 @@
         });
         const result = await res.json();
         if (result.status === 'success') {
-          Swal.fire('สำเร็จ', 'ลงทะเบียนบันทึกลงชีตเรียบร้อย เข้าสู่ระบบได้ทันที', 'success');
+          Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อย เข้าสู่ระบบได้ทันที', 'success');
           toggleAuthMode();
         } else {
           Swal.fire('ข้อผิดพลาด', result.message, 'error');
@@ -288,7 +288,7 @@
     }
 
     async function loadDataFromSheets() {
-      Swal.fire({ title: 'กำลังโหลดข้อมูลจาก Google Sheets...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({ title: 'กำลังโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
         const res = await fetch(GAS_URL, {
           method: 'POST',
@@ -300,7 +300,7 @@
           Swal.close();
         }
       } catch (err) {
-        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับ Google Sheets ได้', 'error');
+        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อได้', 'error');
       }
     }
 
@@ -378,14 +378,14 @@
           return;
         }
 
-        Swal.fire({ title: 'กำลังบันทึกลงชีต...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'saveSubject', username: currentUser.username, subject: formValues })
         });
         await loadDataFromSheets();
         renderSubjects();
-        Swal.fire('สำเร็จ', 'บันทึกรายวิชาลง Google Sheets เรียบร้อย', 'success');
+        Swal.fire('สำเร็จ', 'บันทึกรายวิชาสำเร็จ', 'success');
       }
     }
 
@@ -397,7 +397,7 @@
     async function deleteSubject(id) {
       const result = await Swal.fire({
         title: 'ยืนยันการลบ?',
-        text: "การลบรายวิชาจะทำให้ชุดข้อสอบทั้งหมดในวิชานี้ถูกลบออกจากชีตด้วย",
+        text: "การลบรายวิชาจะทำให้ชุดข้อสอบทั้งหมดในวิชานี้ถูกลบออกด้วย",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ใช่, ลบเลย',
@@ -405,7 +405,7 @@
       });
 
       if (result.isConfirmed) {
-        Swal.fire({ title: 'กำลังลบจากชีต...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'deleteSubject', subjectId: id })
@@ -561,145 +561,153 @@
     }
 
     async function openQuestionModal(qIndex = null) {
-      const subject = subjectsData.find(s => s.id === currentSubjectId);
-      const q = (qIndex !== null) ? subject.questions[qIndex] : {};
-      const currentType = q.type || 'เลือกตอบ';
+  const subject = subjectsData.find(s => s.id === currentSubjectId);
+  const q = (qIndex !== null) ? subject.questions[qIndex] : {};
+  const currentType = q.type || 'เลือกตอบ';
 
-      const { value: f } = await Swal.fire({
-        title: qIndex !== null ? `แก้ไขข้อสอบข้อที่ ${qIndex + 1}` : `เพิ่มข้อสอบใหม่`,
-        width: '800px',
-        html: `
-          <div class="text-left text-xs grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[65vh] overflow-y-auto p-2">
-            <div>
-              <label class="font-bold">1. รูปแบบข้อสอบ</label>
-              <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs" onchange="handleTypeChange()">
-                <option value="เลือกตอบ" ${currentType==='เลือกตอบ'?'selected':''}>เลือกตอบ (Multiple choices)</option>
-                <option value="ถูกผิด" ${currentType==='ถูกผิด'?'selected':''}>ถูกผิด</option>
-                <option value="จับคู่" ${currentType==='จับคู่'?'selected':''}>จับคู่</option>
-                <option value="อัตนัย" ${currentType==='อัตนัย'?'selected':''}>อัตนัย</option>
-                <option value="เติมคำ" ${currentType==='เติมคำ'?'selected':''}>เติมคำ</option>
-              </select>
-            </div>
-            <div>
-              <label class="font-bold">2. กลุ่มสาระการเรียนรู้</label>
-              <input id="q-group" class="swal2-input !mt-1 !h-9 text-xs" value="${q.group||''}">
-            </div>
-            <div>
-              <label class="font-bold">3. ระดับชั้น</label>
-              <input id="q-grade" class="swal2-input !mt-1 !h-9 text-xs" value="${q.grade||''}">
-            </div>
-            <div>
-              <label class="font-bold">4. สาระที่</label>
-              <input id="q-strand" class="swal2-input !mt-1 !h-9 text-xs" value="${q.strand||''}">
-            </div>
-            <div>
-              <label class="font-bold">5. มาตรฐานการเรียนรู้ที่</label>
-              <input id="q-standard" class="swal2-input !mt-1 !h-9 text-xs" value="${q.standard||''}">
-            </div>
-            <div>
-              <label class="font-bold">6. ตัวชี้วัดที่</label>
-              <input id="q-indicator" class="swal2-input !mt-1 !h-9 text-xs" value="${q.indicator||''}">
-            </div>
-            <div class="col-span-2">
-              <label class="font-bold">7. ระดับพฤติกรรมที่ต้องการวัด</label>
-              <select id="q-behavior" class="swal2-input !mt-1 !h-9 text-xs">
-                <option value="ความจำ" ${q.behavior==='ความจำ'?'selected':''}>ความจำ</option>
-                <option value="ความเข้าใจ" ${q.behavior==='ความเข้าใจ'?'selected':''}>ความเข้าใจ</option>
-                <option value="นำไปใช้" ${q.behavior==='นำไปใช้'?'selected':''}>นำไปใช้</option>
-                <option value="วิเคราะห์" ${q.behavior==='วิเคราะห์'?'selected':''}>วิเคราะห์</option>
-                <option value="ประเมินค่า" ${q.behavior==='ประเมินค่า'?'selected':''}>ประเมินค่า</option>
-                <option value="สร้างสรรค์" ${q.behavior==='สร้างสรรค์'?'selected':''}>สร้างสรรค์</option>
-              </select>
-            </div>
-            <div class="col-span-2">
-              <label class="font-bold">8. วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</label>
-              <input id="q-objective" class="swal2-input !mt-1 !h-9 text-xs" value="${q.objective||''}">
-            </div>
-            <div class="col-span-2">
-              <label class="font-bold">9. โจทย์ / คำถาม</label>
-              <textarea id="q-question" class="swal2-textarea !mt-1 text-xs" rows="3">${q.question||''}</textarea>
-            </div>
-            
-            <div class="col-span-2 border-t pt-2 mt-1">
-              <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
-              <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
-            </div>
+  const { value: f } = await Swal.fire({
+    title: qIndex !== null ? `แก้ไขข้อสอบข้อที่ ${qIndex + 1}` : `เพิ่มข้อสอบใหม่`,
+    width: '800px',
+    html: `
+      <div class="text-left text-xs grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[65vh] overflow-y-auto p-2">
+        <div>
+          <label class="font-bold">1. รูปแบบข้อสอบ</label>
+          <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs" onchange="handleTypeChange()">
+            <option value="เลือกตอบ" ${currentType==='เลือกตอบ'?'selected':''}>เลือกตอบ (Multiple choices)</option>
+            <option value="ถูกผิด" ${currentType==='ถูกผิด'?'selected':''}>ถูกผิด</option>
+            <option value="จับคู่" ${currentType==='จับคู่'?'selected':''}>จับคู่</option>
+            <option value="อัตนัย" ${currentType==='อัตนัย'?'selected':''}>อัตนัย</option>
+            <option value="เติมคำ" ${currentType==='เติมคำ'?'selected':''}>เติมคำ</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-bold">2. กลุ่มสาระการเรียนรู้</label>
+          <input id="q-group" class="swal2-input !mt-1 !h-9 text-xs" value="${q.group||''}">
+        </div>
+        <div>
+          <label class="font-bold">3. ระดับชั้น</label>
+          <input id="q-grade" class="swal2-input !mt-1 !h-9 text-xs" value="${q.grade||''}">
+        </div>
+        <div>
+          <label class="font-bold">4. สาระที่</label>
+          <input id="q-strand" class="swal2-input !mt-1 !h-9 text-xs" value="${q.strand||''}">
+        </div>
+        <div>
+          <label class="font-bold">5. มาตรฐานการเรียนรู้ที่</label>
+          <input id="q-standard" class="swal2-input !mt-1 !h-9 text-xs" value="${q.standard||''}">
+        </div>
+        <div>
+          <label class="font-bold">6. ตัวชี้วัดที่</label>
+          <input id="q-indicator" class="swal2-input !mt-1 !h-9 text-xs" value="${q.indicator||''}">
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold">7. ระดับพฤติกรรมที่ต้องการวัด</label>
+          <select id="q-behavior" class="swal2-input !mt-1 !h-9 text-xs">
+            <option value="ความจำ" ${q.behavior==='ความจำ'?'selected':''}>ความจำ</option>
+            <option value="ความเข้าใจ" ${q.behavior==='ความเข้าใจ'?'selected':''}>ความเข้าใจ</option>
+            <option value="นำไปใช้" ${q.behavior==='นำไปใช้'?'selected':''}>นำไปใช้</option>
+            <option value="วิเคราะห์" ${q.behavior==='วิเคราะห์'?'selected':''}>วิเคราะห์</option>
+            <option value="ประเมินค่า" ${q.behavior==='ประเมินค่า'?'selected':''}>ประเมินค่า</option>
+            <option value="สร้างสรรค์" ${q.behavior==='สร้างสรรค์'?'selected':''}>สร้างสรรค์</option>
+          </select>
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold">8. วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</label>
+          <input id="q-objective" class="swal2-input !mt-1 !h-9 text-xs" value="${q.objective||''}">
+        </div>
+        <div class="col-span-2">
+          <label class="font-bold">9. โจทย์ / คำถาม</label>
+          <textarea id="q-question" class="swal2-textarea !mt-1 text-xs" rows="3">${q.question||''}</textarea>
+        </div>
+        
+        <div class="col-span-2 border-t pt-2 mt-1">
+          <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
+          <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+        </div>
 
-            <div class="col-span-2 border-t pt-2">
-              <label class="font-bold">เฉลย (ตัวเลือกที่ถูก)</label>
-              <input id="q-answer" class="swal2-input !mt-1 !h-9 text-xs" value="${q.answer||''}">
-            </div>
-            <div class="col-span-2">
-              <label class="font-bold">คำอธิบายข้อที่ผิด / เหตุผล</label>
-              <input id="q-reason" class="swal2-input !mt-1 !h-9 text-xs" value="${q.reason||''}">
-            </div>
+        <!-- แยกส่วนอธิบายเฉลย ถูก vs ผิด -->
+        <div class="col-span-2 border-t pt-3 mt-1 bg-slate-50 p-2.5 rounded-lg space-y-2">
+          <div>
+            <label class="font-bold text-emerald-700">เฉลย (ตัวเลือกที่ถูก)</label>
+            <input id="q-answer" class="swal2-input !mt-1 !h-9 text-xs" placeholder="เช่น 1 หรือ ข้อ 1" value="${q.answer||''}">
           </div>
-        `,
-        didOpen: () => {
-          handleTypeChange(q);
-        },
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'บันทึกข้อสอบ',
-        cancelButtonText: 'ยกเลิก',
-        preConfirm: () => {
-          const typeVal = document.getElementById('q-type').value;
-          let c1 = '', c2 = '', c3 = '', c4 = '';
-          
-          if (typeVal === 'เลือกตอบ') {
-            c1 = document.getElementById('q-c1') ? document.getElementById('q-c1').value : '';
-            c2 = document.getElementById('q-c2') ? document.getElementById('q-c2').value : '';
-            c3 = document.getElementById('q-c3') ? document.getElementById('q-c3').value : '';
-            c4 = document.getElementById('q-c4') ? document.getElementById('q-c4').value : '';
-          } else if (typeVal === 'ถูกผิด') {
-            c1 = 'ถูก';
-            c2 = 'ผิด';
-          } else {
-            const dynInputs = document.querySelectorAll('.dynamic-opt-input');
-            if (dynInputs[0]) c1 = dynInputs[0].value;
-            if (dynInputs[1]) c2 = dynInputs[1].value;
-            if (dynInputs[2]) c3 = dynInputs[2].value;
-            if (dynInputs[3]) c4 = dynInputs[3].value;
-          }
+          <div>
+            <label class="font-bold text-emerald-700">เหตุผล (ทำไมข้อนี้ถึงถูก)</label>
+            <textarea id="q-reason" class="swal2-textarea !mt-1 text-xs" rows="2" placeholder="อธิบายสาเหตุที่ตัวเลือกนี้ถูกต้อง">${q.reason||''}</textarea>
+          </div>
+          <div>
+            <label class="font-bold text-rose-700">คำอธิบายข้อที่ผิด</label>
+            <textarea id="q-wrong-reason" class="swal2-textarea !mt-1 text-xs" rows="2" placeholder="อธิบายว่าตัวเลือกอื่นผิดเพราะอะไร">${q.wrongReason||''}</textarea>
+          </div>
+        </div>
+      </div>
+    `,
+    didOpen: () => {
+      handleTypeChange(q);
+    },
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึกข้อสอบ',
+    cancelButtonText: 'ยกเลิก',
+    preConfirm: () => {
+      const typeVal = document.getElementById('q-type').value;
+      let c1 = '', c2 = '', c3 = '', c4 = '';
+      
+      if (typeVal === 'เลือกตอบ') {
+        c1 = document.getElementById('q-c1') ? document.getElementById('q-c1').value : '';
+        c2 = document.getElementById('q-c2') ? document.getElementById('q-c2').value : '';
+        c3 = document.getElementById('q-c3') ? document.getElementById('q-c3').value : '';
+        c4 = document.getElementById('q-c4') ? document.getElementById('q-c4').value : '';
+      } else if (typeVal === 'ถูกผิด') {
+        c1 = 'ถูก';
+        c2 = 'ผิด';
+      } else {
+        const dynInputs = document.querySelectorAll('.dynamic-opt-input');
+        if (dynInputs[0]) c1 = dynInputs[0].value;
+        if (dynInputs[1]) c2 = dynInputs[1].value;
+        if (dynInputs[2]) c3 = dynInputs[2].value;
+        if (dynInputs[3]) c4 = dynInputs[3].value;
+      }
 
-          return {
-            id: q.id || 'q_' + Date.now(),
-            number: (qIndex !== null) ? qIndex + 1 : (subject.questions ? subject.questions.length + 1 : 1),
-            type: typeVal,
-            group: document.getElementById('q-group').value,
-            grade: document.getElementById('q-grade').value,
-            strand: document.getElementById('q-strand').value,
-            standard: document.getElementById('q-standard').value,
-            indicator: document.getElementById('q-indicator').value,
-            behavior: document.getElementById('q-behavior').value,
-            objective: document.getElementById('q-objective').value,
-            question: document.getElementById('q-question').value,
-            choice1: c1,
-            choice2: c2,
-            choice3: c3,
-            choice4: c4,
-            answer: document.getElementById('q-answer').value,
-            reason: document.getElementById('q-reason').value
-          }
-        }
-      });
-
-      if (f) {
-        Swal.fire({ title: 'กำลังบันทึกลงชีต...', didOpen: () => Swal.showLoading() });
-        await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
-        });
-        await loadDataFromSheets();
-        renderQuestions();
-        Swal.fire('สำเร็จ', 'บันทึกข้อสอบลง Google Sheets เรียบร้อยแล้ว', 'success');
+      return {
+        id: q.id || 'q_' + Date.now(),
+        number: (qIndex !== null) ? qIndex + 1 : (subject.questions ? subject.questions.length + 1 : 1),
+        type: typeVal,
+        group: document.getElementById('q-group').value,
+        grade: document.getElementById('q-grade').value,
+        strand: document.getElementById('q-strand').value,
+        standard: document.getElementById('q-standard').value,
+        indicator: document.getElementById('q-indicator').value,
+        behavior: document.getElementById('q-behavior').value,
+        objective: document.getElementById('q-objective').value,
+        question: document.getElementById('q-question').value,
+        choice1: c1,
+        choice2: c2,
+        choice3: c3,
+        choice4: c4,
+        answer: document.getElementById('q-answer').value,
+        reason: document.getElementById('q-reason').value,
+        wrongReason: document.getElementById('q-wrong-reason').value
       }
     }
+  });
+
+  if (f) {
+    Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+    await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
+    });
+    await loadDataFromSheets();
+    renderQuestions();
+    Swal.fire('สำเร็จ', 'บันทึกข้อสอบเรียบร้อยแล้ว', 'success');
+  }
+}
 
     async function deleteQuestion(qId) {
       const result = await Swal.fire({
         title: 'ยืนยันการลบข้อสอบ?',
-        text: 'ข้อสอบจะถูกลบออกจาก Google Sheets ทันที',
+        text: 'ข้อสอบจะถูกลบออก ทันที',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ลบ',
@@ -707,7 +715,7 @@
       });
 
       if (result.isConfirmed) {
-        Swal.fire({ title: 'กำลังลบจากชีต...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'deleteQuestion', questionId: qId })
@@ -788,7 +796,7 @@
       }
     }
 
-    // ฟังก์ชันอ่านไฟล์ ตรวจสอบ Header และบันทึกลง Google Sheets
+    // ฟังก์ชันอ่านไฟล์ ตรวจสอบ Header และบันทึก
     function processExcelFile(file) {
       const reader = new FileReader();
       reader.onload = async function(e) {
@@ -827,7 +835,7 @@
           }
 
           Swal.fire({ 
-            title: 'กำลังนำเข้าข้อมูลลง Google Sheets...', 
+            title: 'กำลังนำ Load...', 
             text: `กำลังบันทึกข้อมูลทั้งหมด ${rows.length} ข้อ`,
             allowOutsideClick: false, 
             didOpen: () => Swal.showLoading() 
@@ -863,7 +871,7 @@
 
           await loadDataFromSheets();
           renderQuestions();
-          Swal.fire('สำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อลง Google Sheets เรียบร้อยแล้ว`, 'success');
+          Swal.fire('สำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อ เรียบร้อยแล้ว`, 'success');
 
         } catch (err) {
           Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ Excel ได้: ' + err.message, 'error');
@@ -903,169 +911,170 @@
     }
 
     function generateCardHTML(subject, q, num) {
-      const qType = q.type || 'เลือกตอบ';
-      
-      const isMc = (qType === 'เลือกตอบ');
-      const isTf = (qType === 'ถูกผิด');
-      const isMatch = (qType === 'จับคู่');
-      const isFill = (qType === 'เติมคำ');
-      const isSubjective = (qType === 'อัตนัย');
+  const qType = q.type || 'เลือกตอบ';
+  
+  const isMc = (qType === 'เลือกตอบ');
+  const isTf = (qType === 'ถูกผิด');
+  const isMatch = (qType === 'จับคู่');
+  const isFill = (qType === 'เติมคำ');
+  const isSubjective = (qType === 'อัตนัย');
 
-      const behaviors = ['ความจำ', 'ความเข้าใจ', 'นำไปใช้', 'วิเคราะห์', 'ประเมินค่า', 'สร้างสรรค์'];
-      const bCheck = {};
-      behaviors.forEach(b => {
-        bCheck[b] = (q.behavior === b);
-      });
+  const behaviors = ['ความจำ', 'ความเข้าใจ', 'นำไปใช้', 'วิเคราะห์', 'ประเมินค่า', 'สร้างสรรค์'];
+  const bCheck = {};
+  behaviors.forEach(b => {
+    bCheck[b] = (q.behavior === b);
+  });
 
-      let choicesHTML = '';
-      if (isMc) {
-        choicesHTML = `
-          <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-1 pl-2">
-            <div>1. ${q.choice1 || ''}</div>
-            <div>2. ${q.choice2 || ''}</div>
-            <div>3. ${q.choice3 || ''}</div>
-            <div>4. ${q.choice4 || ''}</div>
-          </div>
-        `;
-      } else if (isTf) {
-        choicesHTML = `<div class="mt-1 pl-2">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
-      } else {
-        const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
-        if (opts.length > 0) {
-          choicesHTML = `<div class="mt-1 pl-2 space-y-0.5">` + opts.map((c, i) => `<div>${i + 1}) ${c}</div>`).join('') + `</div>`;
-        } else {
-          choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500">(- รูปแบบ${qType} -)</div>`;
-        }
-      }
+  let choicesHTML = '';
+  if (isMc) {
+    choicesHTML = `
+      <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-1 pl-2">
+        <div>1. ${q.choice1 || ''}</div>
+        <div>2. ${q.choice2 || ''}</div>
+        <div>3. ${q.choice3 || ''}</div>
+        <div>4. ${q.choice4 || ''}</div>
+      </div>
+    `;
+  } else if (isTf) {
+    choicesHTML = `<div class="mt-1 pl-2">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
+  } else {
+    const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
+    if (opts.length > 0) {
+      choicesHTML = `<div class="mt-1 pl-2 space-y-0.5">` + opts.map((c, i) => `<div>${i + 1}) ${c}</div>`).join('') + `</div>`;
+    } else {
+      choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500">(- รูปแบบ${qType} -)</div>`;
+    }
+  }
 
-      return `
-        <div class="card-container">
-          <!-- Header: ชื่อบัตรข้อสอบ + กล่องเลขข้อขวาบน -->
-          <div class="card-header-box">
-            <div class="w-1/3"></div>
-            <div class="w-1/3 text-center font-bold text-sm">บัตรข้อสอบ (Item Card)</div>
-            <div class="w-1/3 flex justify-end">
-              <div class="border border-black px-3 py-1 font-bold text-xs flex items-center gap-2 bg-white">
-                <span>ข้อที่</span>
-                <span class="text-sm font-semibold">${num}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Main Body Grid Layout -->
-          <div class="card-body-grid">
-            
-            <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น -->
-            <div class="card-left-col">
-              <div>
-                <!-- ข้อ 1. รูปแบบข้อสอบ -->
-                <div class="flex items-start gap-1">
-                  <span class="font-bold whitespace-nowrap">1.รูปแบบข้อสอบ</span>
-                  <div class="flex-1">
-                    <div class="mb-0.5">
-                      1. <span class="radio-icon ${isMc ? 'checked' : ''}"></span> แบบเลือกตอบ (Multiple choices)
-                    </div>
-                    <div class="flex flex-wrap gap-x-2 gap-y-0.5">
-                      <span>2. แบบอื่น ๆ</span>
-                      <span><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
-                      <span><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
-                      <span><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
-                      <span><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ข้อ 2-6. ข้อมูลวิชา -->
-                <div class="grid grid-cols-12 gap-x-1 mt-1.5">
-                  <div class="col-span-6"><span class="font-bold">2.รายวิชา</span> ${subject.name || ''}</div>
-                  <div class="col-span-6"><span class="font-bold">รหัส</span> ${subject.code || ''}</div>
-                  
-                  <div class="col-span-12 mt-0.5"><span class="font-bold">กลุ่มสาระการเรียนรู้</span> ${q.group || ''}</div>
-                  
-                  <div class="col-span-12 mt-0.5"><span class="font-bold">3.ระดับชั้น</span> ${q.grade || ''}</div>
-                  <div class="col-span-12 mt-0.5"><span class="font-bold">4.สาระที่</span> ${q.strand || ''}</div>
-                  <div class="col-span-12 mt-0.5"><span class="font-bold">5.มาตรฐานการเรียนรู้ที่</span> ${q.standard || ''}</div>
-                  <div class="col-span-12 mt-0.5"><span class="font-bold">6.ตัวชี้วัดที่</span> ${q.indicator || ''}</div>
-                </div>
-
-                <!-- ข้อ 7. ระดับพฤติกรรม -->
-                <div class="mt-1.5">
-                  <span class="font-bold">7.ระดับพฤติกรรมที่ต้องการวัด</span>
-                  <div class="grid grid-cols-3 gap-y-0.5 pl-4 mt-0.5">
-                    <div><span class="radio-icon ${bCheck['ความจำ'] ? 'checked' : ''}"></span> ความจำ</div>
-                    <div><span class="radio-icon ${bCheck['ความเข้าใจ'] ? 'checked' : ''}"></span> ความเข้าใจ</div>
-                    <div><span class="radio-icon ${bCheck['นำไปใช้'] ? 'checked' : ''}"></span> นำไปใช้</div>
-                    <div><span class="radio-icon ${bCheck['วิเคราะห์'] ? 'checked' : ''}"></span> วิเคราะห์</div>
-                    <div><span class="radio-icon ${bCheck['ประเมินค่า'] ? 'checked' : ''}"></span> ประเมินค่า</div>
-                    <div><span class="radio-icon ${bCheck['สร้างสรรค์'] ? 'checked' : ''}"></span> สร้างสรรค์</div>
-                  </div>
-                </div>
-
-                <!-- ข้อ 8. วัตถุประสงค์ -->
-                <div class="mt-1.5">
-                  <span class="font-bold">8.วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</span>
-                  <div class="pl-2 mt-0.5">${q.objective || '-'}</div>
-                </div>
-
-                <!-- ข้อ 9. โจทย์ -->
-                <div class="mt-2">
-                  <span class="font-bold">9.โจทย์/คำถาม</span>
-                  <div class="pl-2 mt-0.5 leading-normal font-medium">${q.question || ''}</div>
-                </div>
-
-                <!-- ข้อ 10. ตัวเลือก -->
-                <div class="mt-2">
-                  <span class="font-bold">10.ตัวเลือก</span>
-                  ${choicesHTML}
-                </div>
-              </div>
-
-              <!-- ลายเซ็นผู้ออก + ผู้กลั่นกรอง 2 ท่าน -->
-              <div class="mt-4 pt-2 border-t border-dashed border-gray-300">
-                <div class="flex justify-end mb-2">
-                  <div class="text-center w-52">
-                    <div>( ........................................................... )</div>
-                    <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
-                  </div>
-                </div>
-
-                <div class="flex justify-between items-end">
-                  <div class="text-center">
-                    <span class="font-bold">ลงชื่อ</span> ........................................................... <span class="font-bold">ผู้ออกข้อสอบ</span>
-                    <div class="mt-0.5">( ${currentUser.username || ''} )</div>
-                  </div>
-                  <div class="text-center w-52">
-                    <div>( ........................................................... )</div>
-                    <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- ฝั่งขวา: เฉลย + เหตุผล + คำอธิบายข้อที่ผิด -->
-            <div class="card-right-col flex flex-col justify-between">
-              <div>
-                <div class="text-center font-bold text-sm mb-3">เฉลย</div>
-                
-                <div class="font-bold mb-1">ตัวเลือกที่ถูกคือ</div>
-                <div class="pl-2 mb-2 text-indigo-900 font-bold">${q.answer || '-'}</div>
-                
-                <div class="font-bold mb-1">เหตุผล</div>
-                <div class="pl-2 mb-4 text-xs leading-relaxed">${q.reason || '-'}</div>
-              </div>
-
-              <div class="mt-auto">
-                <div class="font-bold mb-1">คำอธิบายข้อที่ผิด</div>
-                <div class="pl-2 min-h-[60px] text-xs text-gray-600">
-                </div>
-              </div>
-            </div>
-
+  return `
+    <div class="card-container">
+      <!-- Header: ชื่อบัตรข้อสอบ + กล่องเลขข้อขวาบน -->
+      <div class="card-header-box">
+        <div class="w-1/3"></div>
+        <div class="w-1/3 text-center font-bold text-sm">บัตรข้อสอบ (Item Card)</div>
+        <div class="w-1/3 flex justify-end">
+          <div class="border border-black px-3 py-1 font-bold text-xs flex items-center gap-2 bg-white">
+            <span>ข้อที่</span>
+            <span class="text-sm font-semibold">${num}</span>
           </div>
         </div>
-      `;
-    }
+      </div>
+
+      <!-- Main Body Grid Layout -->
+      <div class="card-body-grid">
+        
+        <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น -->
+        <div class="card-left-col">
+          <div>
+            <!-- ข้อ 1. รูปแบบข้อสอบ -->
+            <div class="flex items-start gap-1">
+              <span class="font-bold whitespace-nowrap">1.รูปแบบข้อสอบ</span>
+              <div class="flex-1">
+                <div class="mb-0.5">
+                  1. <span class="radio-icon ${isMc ? 'checked' : ''}"></span> แบบเลือกตอบ (Multiple choices)
+                </div>
+                <div class="flex flex-wrap gap-x-2 gap-y-0.5">
+                  <span>2. แบบอื่น ๆ</span>
+                  <span><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
+                  <span><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
+                  <span><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
+                  <span><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ข้อ 2-6. ข้อมูลวิชา -->
+            <div class="grid grid-cols-12 gap-x-1 mt-1.5">
+              <div class="col-span-6"><span class="font-bold">2.รายวิชา</span> ${subject.name || ''}</div>
+              <div class="col-span-6"><span class="font-bold">รหัส</span> ${subject.code || ''}</div>
+              
+              <div class="col-span-12 mt-0.5"><span class="font-bold">กลุ่มสาระการเรียนรู้</span> ${q.group || ''}</div>
+              
+              <div class="col-span-12 mt-0.5"><span class="font-bold">3.ระดับชั้น</span> ${q.grade || ''}</div>
+              <div class="col-span-12 mt-0.5"><span class="font-bold">4.สาระที่</span> ${q.strand || ''}</div>
+              <div class="col-span-12 mt-0.5"><span class="font-bold">5.มาตรฐานการเรียนรู้ที่</span> ${q.standard || ''}</div>
+              <div class="col-span-12 mt-0.5"><span class="font-bold">6.ตัวชี้วัดที่</span> ${q.indicator || ''}</div>
+            </div>
+
+            <!-- ข้อ 7. ระดับพฤติกรรม -->
+            <div class="mt-1.5">
+              <span class="font-bold">7.ระดับพฤติกรรมที่ต้องการวัด</span>
+              <div class="grid grid-cols-3 gap-y-0.5 pl-4 mt-0.5">
+                <div><span class="radio-icon ${bCheck['ความจำ'] ? 'checked' : ''}"></span> ความจำ</div>
+                <div><span class="radio-icon ${bCheck['ความเข้าใจ'] ? 'checked' : ''}"></span> ความเข้าใจ</div>
+                <div><span class="radio-icon ${bCheck['นำไปใช้'] ? 'checked' : ''}"></span> นำไปใช้</div>
+                <div><span class="radio-icon ${bCheck['วิเคราะห์'] ? 'checked' : ''}"></span> วิเคราะห์</div>
+                <div><span class="radio-icon ${bCheck['ประเมินค่า'] ? 'checked' : ''}"></span> ประเมินค่า</div>
+                <div><span class="radio-icon ${bCheck['สร้างสรรค์'] ? 'checked' : ''}"></span> สร้างสรรค์</div>
+              </div>
+            </div>
+
+            <!-- ข้อ 8. วัตถุประสงค์ -->
+            <div class="mt-1.5">
+              <span class="font-bold">8.วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</span>
+              <div class="pl-2 mt-0.5">${q.objective || '-'}</div>
+            </div>
+
+            <!-- ข้อ 9. โจทย์ -->
+            <div class="mt-2">
+              <span class="font-bold">9.โจทย์/คำถาม</span>
+              <div class="pl-2 mt-0.5 leading-normal font-medium">${q.question || ''}</div>
+            </div>
+
+            <!-- ข้อ 10. ตัวเลือก -->
+            <div class="mt-2">
+              <span class="font-bold">10.ตัวเลือก</span>
+              ${choicesHTML}
+            </div>
+          </div>
+
+          <!-- ลายเซ็นผู้ออก + ผู้กลั่นกรอง 2 ท่าน -->
+          <div class="mt-4 pt-2 border-t border-dashed border-gray-300">
+            <div class="flex justify-end mb-2">
+              <div class="text-center w-52">
+                <div>( ........................................................... )</div>
+                <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-end">
+              <div class="text-center">
+                <span class="font-bold">ลงชื่อ</span> ........................................................... <span class="font-bold">ผู้ออกข้อสอบ</span>
+                <div class="mt-0.5">( ${currentUser.username || ''} )</div>
+              </div>
+              <div class="text-center w-52">
+                <div>( ........................................................... )</div>
+                <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ฝั่งขวา: เฉลย + เหตุผลข้อถูก + คำอธิบายข้อที่ผิด -->
+        <div class="card-right-col flex flex-col justify-between">
+          <div>
+            <div class="text-center font-bold text-sm mb-3">เฉลย</div>
+            
+            <div class="font-bold mb-1">ตัวเลือกที่ถูกคือ</div>
+            <div class="pl-2 mb-3 text-indigo-900 font-bold">${q.answer || '-'}</div>
+            
+            <div class="font-bold mb-1">เหตุผล (ทำไมข้อนี้ถึงถูก)</div>
+            <div class="pl-2 mb-4 text-xs leading-relaxed">${q.reason || '-'}</div>
+          </div>
+
+          <div class="mt-auto pt-2 border-t border-gray-200">
+            <div class="font-bold mb-1">คำอธิบายข้อที่ผิด</div>
+            <div class="pl-2 text-xs leading-relaxed text-gray-700 min-h-[60px]">
+              ${q.wrongReason || '-'}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
   </script>
 </body>
 </html>
