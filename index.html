@@ -193,30 +193,37 @@
       document.getElementById('toggleAuthBtn').innerText = isRegisterMode ? 'มีบัญชีอยู่แล้ว? เข้าสู่ระบบ' : 'ยังไม่มีบัญชี? ลงทะเบียนที่นี่';
     }
 
-    function handleAuth(e) {
+    async function handleAuth(e) {
       e.preventDefault();
       const user = document.getElementById('authUsername').value;
       const pass = document.getElementById('authPassword').value;
 
-      let users = JSON.parse(localStorage.getItem('itemcard_users') || '[]');
+      Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
       if (isRegisterMode) {
-        if (users.find(u => u.username === user)) {
-          Swal.fire('ข้อผิดพลาด', 'ชื่อผู้ใช้งานนี้ถูกใช้ไปแล้ว', 'error');
-          return;
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'registerUser', username: user, password: pass })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          Swal.fire('สำเร็จ', 'ลงทะเบียนบันทึกลงชีตเรียบร้อย เข้าสู่ระบบได้ทันที', 'success');
+          toggleAuthMode();
+        } else {
+          Swal.fire('ข้อผิดพลาด', result.message, 'error');
         }
-        users.push({ username: user, password: pass });
-        localStorage.setItem('itemcard_users', JSON.stringify(users));
-        Swal.fire('สำเร็จ', 'ลงทะเบียนเรียบร้อยแล้ว เข้าสู่ระบบได้ทันที', 'success');
-        toggleAuthMode();
       } else {
-        const found = users.find(u => u.username === user && u.password === pass);
-        if (found || (user === 'admin' && pass === '1234')) {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'loginUser', username: user, password: pass })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
           currentUser = { username: user };
           localStorage.setItem('itemcard_user', JSON.stringify(currentUser));
           showDashboard();
         } else {
-          Swal.fire('ข้อผิดพลาด', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+          Swal.fire('ข้อผิดพลาด', result.message, 'error');
         }
       }
     }
@@ -231,7 +238,7 @@
     }
 
     async function loadDataFromSheets() {
-      Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({ title: 'กำลังโหลดข้อมูลจาก Google Sheets...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
       try {
         const res = await fetch(GAS_URL, {
           method: 'POST',
@@ -321,7 +328,7 @@
           return;
         }
 
-        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังบันทึกลงชีต...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'saveSubject', username: currentUser.username, subject: formValues })
@@ -340,7 +347,7 @@
     async function deleteSubject(id) {
       const result = await Swal.fire({
         title: 'ยืนยันการลบ?',
-        text: "การลบรายวิชาจะทำให้ชุดข้อสอบทั้งหมดในวิชานี้ถูกลบไปด้วย",
+        text: "การลบรายวิชาจะทำให้ชุดข้อสอบทั้งหมดในวิชานี้ถูกลบออกจากชีตด้วย",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ใช่, ลบเลย',
@@ -348,7 +355,7 @@
       });
 
       if (result.isConfirmed) {
-        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังลบจากชีต...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'deleteSubject', subjectId: id })
@@ -412,7 +419,6 @@
       });
     }
 
-    // ฟังก์ชั่นสลับการแสดงผลข้อ 10 ตามรูปแบบข้อสอบ
     function handleTypeChange(qData = {}) {
       const type = document.getElementById('q-type').value;
       const choicesBox = document.getElementById('choices-container');
@@ -431,7 +437,6 @@
           </div>
         `;
       } else {
-        // รูปแบบ "จับคู่", "อัตนัย", "เติมคำ" -> เพิ่มช่อง Input ได้สูงสุด 4 ช่อง
         choicesBox.innerHTML = `
           <div class="col-span-2 space-y-2">
             <div class="flex justify-between items-center mb-1">
@@ -565,7 +570,6 @@
               <textarea id="q-question" class="swal2-textarea !mt-1 text-xs" rows="3">${q.question||''}</textarea>
             </div>
             
-            <!-- Dynamic Choices Section (ข้อ 10) -->
             <div class="col-span-2 border-t pt-2 mt-1">
               <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
               <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
@@ -631,20 +635,21 @@
       });
 
       if (f) {
-        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังบันทึกลงชีต...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
         });
         await loadDataFromSheets();
         renderQuestions();
-        Swal.fire('สำเร็จ', 'บันทึกข้อสอบเรียบร้อยแล้ว', 'success');
+        Swal.fire('สำเร็จ', 'บันทึกข้อสอบลง Google Sheets เรียบร้อยแล้ว', 'success');
       }
     }
 
     async function deleteQuestion(qId) {
       const result = await Swal.fire({
         title: 'ยืนยันการลบข้อสอบ?',
+        text: 'ข้อสอบจะถูกลบออกจาก Google Sheets ทันที',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ลบ',
@@ -652,7 +657,7 @@
       });
 
       if (result.isConfirmed) {
-        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังลบจากชีต...', didOpen: () => Swal.showLoading() });
         await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'deleteQuestion', questionId: qId })
@@ -674,7 +679,7 @@
         const sheetName = workbook.SheetNames[0];
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-        Swal.fire({ title: 'กำลังนำเข้าข้อมูล...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'กำลังนำเข้าข้อมูลลงชีต...', didOpen: () => Swal.showLoading() });
 
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i];
@@ -706,7 +711,7 @@
 
         await loadDataFromSheets();
         renderQuestions();
-        Swal.fire('อัปโหลดสำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อ เรียบร้อยแล้ว`, 'success');
+        Swal.fire('อัปโหลดสำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อลง Google Sheets เรียบร้อยแล้ว`, 'success');
       };
       reader.readAsArrayBuffer(file);
     }
