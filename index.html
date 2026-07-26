@@ -94,6 +94,19 @@
     .radio-icon.checked {
       background-color: #000;
     }
+    .radio-icon {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+  border-radius: 50%;
+  margin-right: 2px;
+  vertical-align: middle;
+    }
+    .radio-icon.checked {
+  background-color: #000;
+  box-shadow: inset 0 0 0 2px #fff;
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between text-slate-800">
@@ -883,35 +896,6 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function printExamCards() {
-      const subject = subjectsData.find(s => s.id === currentSubjectId);
-      const questions = subject.questions || [];
-
-      if (questions.length === 0) {
-        Swal.fire('ข้อผิดพลาด', 'ไม่มีข้อมูลข้อสอบที่จะพิมพ์', 'warning');
-        return;
-      }
-
-      const printArea = document.getElementById('print-area');
-      printArea.innerHTML = '';
-
-      for (let i = 0; i < questions.length; i += 2) {
-        let pageHTML = `<div class="a4-page page-break">`;
-        pageHTML += generateCardHTML(subject, questions[i], i + 1);
-
-        if (i + 1 < questions.length) {
-          pageHTML += generateCardHTML(subject, questions[i + 1], i + 2);
-        }
-
-        pageHTML += `</div>`;
-        printArea.innerHTML += pageHTML;
-      }
-
-      printArea.classList.remove('hidden');
-      window.print();
-      printArea.classList.add('hidden');
-    }
-
     function generateCardHTML(subject, q, num) {
   const qType = q.type || 'เลือกตอบ';
   
@@ -930,78 +914,74 @@
   let choicesHTML = '';
   if (isMc) {
     choicesHTML = `
-      <div class="grid grid-cols-2 gap-x-2 gap-y-1 mt-1 pl-2">
-        <div>1. ${q.choice1 || ''}</div>
-        <div>2. ${q.choice2 || ''}</div>
-        <div>3. ${q.choice3 || ''}</div>
-        <div>4. ${q.choice4 || ''}</div>
+      <div class="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 pl-2 text-xs">
+        <div><b>1.</b> ${q.choice1 || ''}</div>
+        <div><b>2.</b> ${q.choice2 || ''}</div>
+        <div><b>3.</b> ${q.choice3 || ''}</div>
+        <div><b>4.</b> ${q.choice4 || ''}</div>
       </div>
     `;
   } else if (isTf) {
-    choicesHTML = `<div class="mt-1 pl-2">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
+    choicesHTML = `<div class="mt-1 pl-2 text-xs">1) ถูก &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2) ผิด</div>`;
   } else {
     const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
     if (opts.length > 0) {
-      choicesHTML = `<div class="mt-1 pl-2 space-y-0.5">` + opts.map((c, i) => `<div>${i + 1}) ${c}</div>`).join('') + `</div>`;
+      choicesHTML = `<div class="mt-1 pl-2 space-y-0.5 text-xs">` + opts.map((c, i) => `<div><b>${i + 1})</b> ${c}</div>`).join('') + `</div>`;
     } else {
-      choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500">(- รูปแบบ${qType} -)</div>`;
+      choicesHTML = `<div class="mt-1 pl-2 italic text-gray-500 text-xs">(- รูปแบบ${qType} -)</div>`;
     }
   }
 
   return `
-    <div class="card-container">
+    <div class="card-container border-2 border-black p-3 mb-4 bg-white text-black text-xs font-sans">
+      
       <!-- Header: ชื่อบัตรข้อสอบ + กล่องเลขข้อขวาบน -->
-      <div class="card-header-box">
-        <div class="w-1/3"></div>
-        <div class="w-1/3 text-center font-bold text-sm">บัตรข้อสอบ (Item Card)</div>
-        <div class="w-1/3 flex justify-end">
-          <div class="border border-black px-3 py-1 font-bold text-xs flex items-center gap-2 bg-white">
+      <div class="flex justify-between items-center border-b-2 border-black pb-2 mb-2">
+        <div class="w-1/4"></div>
+        <div class="w-2/4 text-center font-bold text-base tracking-wide">บัตรข้อสอบ (Item Card)</div>
+        <div class="w-1/4 flex justify-end">
+          <div class="border border-black px-3 py-0.5 font-bold text-xs flex items-center gap-1.5 bg-gray-50">
             <span>ข้อที่</span>
-            <span class="text-sm font-semibold">${num}</span>
+            <span class="text-base font-extrabold">${num}</span>
           </div>
         </div>
       </div>
 
       <!-- Main Body Grid Layout -->
-      <div class="card-body-grid">
+      <div class="grid grid-cols-12 gap-3">
         
-        <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น -->
-        <div class="card-left-col">
+        <!-- ฝั่งซ้าย: ข้อมูลรายวิชา ตัวเลือก ลายเซ็น (8/12) -->
+        <div class="col-span-8 border-r border-black pr-3 flex flex-col justify-between">
           <div>
             <!-- ข้อ 1. รูปแบบข้อสอบ -->
-            <div class="flex items-start gap-1">
-              <span class="font-bold whitespace-nowrap">1.รูปแบบข้อสอบ</span>
+            <div class="flex items-start gap-1 leading-tight">
+              <span class="font-bold whitespace-nowrap">1. รูปแบบข้อสอบ:</span>
               <div class="flex-1">
-                <div class="mb-0.5">
-                  1. <span class="radio-icon ${isMc ? 'checked' : ''}"></span> แบบเลือกตอบ (Multiple choices)
-                </div>
-                <div class="flex flex-wrap gap-x-2 gap-y-0.5">
-                  <span>2. แบบอื่น ๆ</span>
-                  <span><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
-                  <span><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
-                  <span><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
-                  <span><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
-                </div>
+                <span class="inline-block mr-2"><span class="radio-icon ${isMc ? 'checked' : ''}"></span> เลือกตอบ</span>
+                <span class="inline-block mr-2"><span class="radio-icon ${isTf ? 'checked' : ''}"></span> ถูกผิด</span>
+                <span class="inline-block mr-2"><span class="radio-icon ${isMatch ? 'checked' : ''}"></span> จับคู่</span>
+                <span class="inline-block mr-2"><span class="radio-icon ${isFill ? 'checked' : ''}"></span> เติมคำ</span>
+                <span class="inline-block"><span class="radio-icon ${isSubjective ? 'checked' : ''}"></span> อัตนัย</span>
               </div>
             </div>
 
             <!-- ข้อ 2-6. ข้อมูลวิชา -->
-            <div class="grid grid-cols-12 gap-x-1 mt-1.5">
-              <div class="col-span-6"><span class="font-bold">2.รายวิชา</span> ${subject.name || ''}</div>
-              <div class="col-span-6"><span class="font-bold">รหัส</span> ${subject.code || ''}</div>
+            <div class="grid grid-cols-12 gap-x-2 gap-y-1 mt-2 pt-1 border-t border-gray-300 leading-tight">
+              <div class="col-span-7"><span class="font-bold">2. รายวิชา:</span> ${subject.name || '-'}</div>
+              <div class="col-span-5"><span class="font-bold">รหัส:</span> ${subject.code || '-'}</div>
               
-              <div class="col-span-12 mt-0.5"><span class="font-bold">กลุ่มสาระการเรียนรู้</span> ${q.group || ''}</div>
+              <div class="col-span-12"><span class="font-bold">กลุ่มสาระฯ:</span> ${q.group || '-'}</div>
               
-              <div class="col-span-12 mt-0.5"><span class="font-bold">3.ระดับชั้น</span> ${q.grade || ''}</div>
-              <div class="col-span-12 mt-0.5"><span class="font-bold">4.สาระที่</span> ${q.strand || ''}</div>
-              <div class="col-span-12 mt-0.5"><span class="font-bold">5.มาตรฐานการเรียนรู้ที่</span> ${q.standard || ''}</div>
-              <div class="col-span-12 mt-0.5"><span class="font-bold">6.ตัวชี้วัดที่</span> ${q.indicator || ''}</div>
+              <div class="col-span-6"><span class="font-bold">3. ระดับชั้น:</span> ${q.grade || '-'}</div>
+              <div class="col-span-6"><span class="font-bold">4. สาระที่:</span> ${q.strand || '-'}</div>
+              <div class="col-span-6"><span class="font-bold">5. มาตรฐานฯ:</span> ${q.standard || '-'}</div>
+              <div class="col-span-6"><span class="font-bold">6. ตัวชี้วัดฯ:</span> ${q.indicator || '-'}</div>
             </div>
 
             <!-- ข้อ 7. ระดับพฤติกรรม -->
-            <div class="mt-1.5">
-              <span class="font-bold">7.ระดับพฤติกรรมที่ต้องการวัด</span>
-              <div class="grid grid-cols-3 gap-y-0.5 pl-4 mt-0.5">
+            <div class="mt-2 pt-1 border-t border-gray-300">
+              <span class="font-bold">7. ระดับพฤติกรรมที่ต้องการวัด:</span>
+              <div class="grid grid-cols-3 gap-y-1 pl-2 mt-1 leading-tight">
                 <div><span class="radio-icon ${bCheck['ความจำ'] ? 'checked' : ''}"></span> ความจำ</div>
                 <div><span class="radio-icon ${bCheck['ความเข้าใจ'] ? 'checked' : ''}"></span> ความเข้าใจ</div>
                 <div><span class="radio-icon ${bCheck['นำไปใช้'] ? 'checked' : ''}"></span> นำไปใช้</div>
@@ -1012,62 +992,59 @@
             </div>
 
             <!-- ข้อ 8. วัตถุประสงค์ -->
-            <div class="mt-1.5">
-              <span class="font-bold">8.วัตถุประสงค์เชิงพฤติกรรมของข้อสอบนี้</span>
-              <div class="pl-2 mt-0.5">${q.objective || '-'}</div>
+            <div class="mt-2 pt-1 border-t border-gray-300">
+              <span class="font-bold">8. วัตถุประสงค์เชิงพฤติกรรม:</span>
+              <div class="pl-2 mt-0.5 text-gray-800">${q.objective || '-'}</div>
             </div>
 
             <!-- ข้อ 9. โจทย์ -->
-            <div class="mt-2">
-              <span class="font-bold">9.โจทย์/คำถาม</span>
-              <div class="pl-2 mt-0.5 leading-normal font-medium">${q.question || ''}</div>
+            <div class="mt-2 pt-1 border-t border-gray-300">
+              <span class="font-bold">9. โจทย์/คำถาม:</span>
+              <div class="pl-2 mt-0.5 font-medium text-black leading-snug">${q.question || '-'}</div>
             </div>
 
             <!-- ข้อ 10. ตัวเลือก -->
-            <div class="mt-2">
-              <span class="font-bold">10.ตัวเลือก</span>
+            <div class="mt-2 pt-1 border-t border-gray-300">
+              <span class="font-bold">10. ตัวเลือก:</span>
               ${choicesHTML}
             </div>
           </div>
 
-          <!-- ลายเซ็นผู้ออก + ผู้กลั่นกรอง 2 ท่าน -->
-          <div class="mt-4 pt-2 border-t border-dashed border-gray-300">
-            <div class="flex justify-end mb-2">
-              <div class="text-center w-52">
-                <div>( ........................................................... )</div>
-                <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+          <!-- ลายเซ็นท้ายการ์ดฝั่งซ้าย -->
+          <div class="mt-4 pt-2 border-t border-black">
+            <div class="grid grid-cols-2 gap-2 text-center text-[10px]">
+              <div>
+                <div class="mb-1">ลงชื่อ .................................................... ผู้ออกข้อสอบ</div>
+                <div>( ${currentUser.username || '....................................................'} )</div>
               </div>
-            </div>
-
-            <div class="flex justify-between items-end">
-              <div class="text-center">
-                <span class="font-bold">ลงชื่อ</span> ........................................................... <span class="font-bold">ผู้ออกข้อสอบ</span>
-                <div class="mt-0.5">( ${currentUser.username || ''} )</div>
-              </div>
-              <div class="text-center w-52">
-                <div>( ........................................................... )</div>
-                <div class="font-bold text-[10px] mt-0.5">ผู้กลั่นกรองข้อสอบ</div>
+              <div>
+                <div class="mb-1">ลงชื่อ .................................................... ผู้กลั่นกรอง</div>
+                <div>( .................................................... )</div>
               </div>
             </div>
           </div>
 
         </div>
 
-        <!-- ฝั่งขวา: เฉลย + เหตุผลข้อถูก + คำอธิบายข้อที่ผิด -->
-        <div class="card-right-col flex flex-col justify-between">
+        <!-- ฝั่งขวา: เฉลย + เหตุผล (4/12) -->
+        <div class="col-span-4 flex flex-col justify-between bg-gray-50/50 p-2 border border-gray-200 rounded">
           <div>
-            <div class="text-center font-bold text-sm mb-3">เฉลย</div>
+            <div class="text-center font-bold text-sm mb-2 pb-1 border-b border-black">เฉลย</div>
             
-            <div class="font-bold mb-1">ตัวเลือกที่ถูกคือ</div>
-            <div class="pl-2 mb-3 text-indigo-900 font-bold">${q.answer || '-'}</div>
+            <div class="mb-3">
+              <span class="font-bold block text-xs">ตัวเลือกที่ถูกต้อง:</span>
+              <div class="pl-2 mt-0.5 text-base font-extrabold text-blue-900 border-l-2 border-blue-600 my-1 bg-white p-1">${q.answer || '-'}</div>
+            </div>
             
-            <div class="font-bold mb-1">เหตุผล (ทำไมข้อนี้ถึงถูก)</div>
-            <div class="pl-2 mb-4 text-xs leading-relaxed">${q.reason || '-'}</div>
+            <div class="mb-3">
+              <span class="font-bold block text-xs">เหตุผล (ทำไมถึงถูก):</span>
+              <div class="pl-2 mt-0.5 text-xs leading-relaxed text-gray-800">${q.reason || '-'}</div>
+            </div>
           </div>
 
-          <div class="mt-auto pt-2 border-t border-gray-200">
-            <div class="font-bold mb-1">คำอธิบายข้อที่ผิด</div>
-            <div class="pl-2 text-xs leading-relaxed text-gray-700 min-h-[60px]">
+          <div class="pt-2 border-t border-gray-300">
+            <span class="font-bold block text-xs">คำอธิบายข้อที่ผิด:</span>
+            <div class="pl-2 mt-0.5 text-xs leading-relaxed text-gray-600 min-h-[50px]">
               ${q.wrongReason || '-'}
             </div>
           </div>
