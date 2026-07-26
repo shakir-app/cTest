@@ -19,7 +19,6 @@
   <style>
     body { font-family: 'Sarabun', sans-serif; }
     
-    /* สไตล์สำหรับการพิมพ์กระดาษ A4 (แนวตั้ง 1 หน้า 2 บัตรข้อสอบ) */
     @media print {
       body * { visibility: hidden; }
       #print-area, #print-area * { visibility: visible; }
@@ -54,9 +53,8 @@
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col justify-between text-slate-800">
 
-  <!-- Main Content Wrapper -->
   <div>
-    <!-- Navbar / Header -->
+    <!-- Navbar -->
     <nav class="bg-indigo-700 text-white shadow-lg no-print">
       <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-3">
@@ -72,15 +70,15 @@
       </div>
     </nav>
 
-    <!-- Container หลัก -->
+    <!-- Main Container -->
     <div class="max-w-7xl mx-auto p-4 sm:p-6 no-print">
       
-      <!-- SECTION 1: Authentication (Login / Register) -->
+      <!-- Auth Section -->
       <div id="authSection" class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8 my-10 border border-slate-200">
         <h2 class="text-2xl font-bold text-center text-indigo-700 mb-6" id="authTitle">เข้าสู่ระบบ</h2>
         <form id="authForm" onsubmit="handleAuth(event)">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้งาน(แนะนำชื่อ-นามสกุล)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้งาน</label>
             <input type="text" id="authUsername" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
           </div>
           <div class="mb-6">
@@ -98,7 +96,7 @@
         </div>
       </div>
 
-      <!-- SECTION 2: Dashboard (รายวิชาทั้งหมด) -->
+      <!-- Dashboard Section -->
       <div id="dashboardSection" class="hidden">
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
           <h1 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-book-bookmark text-indigo-600 mr-2"></i>แดชบอร์ดรายวิชา</h1>
@@ -109,7 +107,7 @@
         <div id="subjectList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </div>
 
-      <!-- SECTION 3: Subject Detail (จัดการข้อสอบในรายวิชา) -->
+      <!-- Subject Detail Section -->
       <div id="subjectDetailSection" class="hidden">
         <div class="mb-6">
           <button onclick="showDashboard()" class="text-indigo-600 hover:text-indigo-800 mb-2 inline-flex items-center">
@@ -141,10 +139,9 @@
     </div>
   </div>
 
-  <!-- AREA สำหรับการพิมพ์กระดาษ A4 -->
   <div id="print-area" class="hidden"></div>
 
-  <!-- FOOTER SECTION -->
+  <!-- Footer -->
   <footer class="mt-12 py-6 bg-slate-800 text-slate-300 text-center text-sm no-print">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
       <div>
@@ -156,13 +153,13 @@
     </div>
   </footer>
 
-  <!-- JAVASCRIPT LOGICS -->
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx9KLEC8MF_c0pgYoIZrI84jWOO5l6NnCXnfs0MQ6fk-uGuL9T4iwmevmp6DzJ8qG4/exec"; // แทนที่ด้วย URL Web App จาก Google Apps Script
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx9KLEC8MF_c0pgYoIZrI84jWOO5l6NnCXnfs0MQ6fk-uGuL9T4iwmevmp6DzJ8qG4/exec";
 
     let currentUser = null;
     let isRegisterMode = false;
     let currentSubjectId = null;
+    let subjectsData = [];
 
     window.onload = function() {
       const savedUser = localStorage.getItem('itemcard_user');
@@ -175,7 +172,6 @@
     function openDonateModal() {
       const phone = "0952200855";
       const qrUrl = `https://promptpay.io/${phone}.png`;
-
       Swal.fire({
         title: '<strong>สนับสนุนค่ากาแฟ ☕</strong>',
         html: `
@@ -187,8 +183,7 @@
           </div>
         `,
         showCloseButton: true,
-        showConfirmButton: false,
-        focusConfirm: false
+        showConfirmButton: false
       });
     }
 
@@ -235,34 +230,44 @@
       document.getElementById('userInfo').classList.add('hidden');
     }
 
-    function getSubjects() {
-      return JSON.parse(localStorage.getItem(`subjects_${currentUser.username}`) || '[]');
+    async function loadDataFromSheets() {
+      Swal.fire({ title: 'กำลังโหลดข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'getSubjects', username: currentUser.username })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          subjectsData = result.subjects;
+          Swal.close();
+        }
+      } catch (err) {
+        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อกับ Google Sheets ได้', 'error');
+      }
     }
 
-    function saveSubjects(data) {
-      localStorage.setItem(`subjects_${currentUser.username}`, JSON.stringify(data));
-    }
-
-    function showDashboard() {
+    async function showDashboard() {
       document.getElementById('authSection').classList.add('hidden');
       document.getElementById('subjectDetailSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
       document.getElementById('userInfo').classList.remove('hidden');
       document.getElementById('userName').innerText = currentUser.username;
+      
+      await loadDataFromSheets();
       renderSubjects();
     }
 
     function renderSubjects() {
-      const subjects = getSubjects();
       const listContainer = document.getElementById('subjectList');
       listContainer.innerHTML = '';
 
-      if (subjects.length === 0) {
+      if (subjectsData.length === 0) {
         listContainer.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400">ยังไม่มีรายวิชาที่สร้างขึ้น กด "เพิ่มรายวิชาใหม่" เพื่อเริ่มสร้าง</div>`;
         return;
       }
 
-      subjects.forEach((s) => {
+      subjectsData.forEach((s) => {
         const qCount = s.questions ? s.questions.length : 0;
         listContainer.innerHTML += `
           <div class="bg-white rounded-2xl shadow-md p-6 relative flex flex-col justify-between hover:shadow-lg transition">
@@ -301,6 +306,7 @@
         cancelButtonText: 'ยกเลิก',
         preConfirm: () => {
           return {
+            id: subject ? subject.id : 'sub_' + Date.now(),
             code: document.getElementById('swal-code').value,
             name: document.getElementById('swal-name').value,
             topic: document.getElementById('swal-topic').value,
@@ -315,51 +321,47 @@
           return;
         }
 
-        let subjects = getSubjects();
-        if (subject) {
-          const index = subjects.findIndex(s => s.id === subject.id);
-          subjects[index] = { ...subjects[index], ...formValues };
-        } else {
-          subjects.push({
-            id: 'sub_' + Date.now(),
-            ...formValues,
-            questions: []
-          });
-        }
-        saveSubjects(subjects);
+        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'saveSubject', username: currentUser.username, subject: formValues })
+        });
+        await loadDataFromSheets();
         renderSubjects();
-        Swal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+        Swal.fire('สำเร็จ', 'บันทึกรายวิชาลง Google Sheets เรียบร้อย', 'success');
       }
     }
 
     function editSubject(id) {
-      const subjects = getSubjects();
-      const subject = subjects.find(s => s.id === id);
+      const subject = subjectsData.find(s => s.id === id);
       if (subject) openSubjectModal(subject);
     }
 
-    function deleteSubject(id) {
-      Swal.fire({
+    async function deleteSubject(id) {
+      const result = await Swal.fire({
         title: 'ยืนยันการลบ?',
         text: "การลบรายวิชาจะทำให้ชุดข้อสอบทั้งหมดในวิชานี้ถูกลบไปด้วย",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'ใช่, ลบเลย',
         cancelButtonText: 'ยกเลิก'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          let subjects = getSubjects().filter(s => s.id !== id);
-          saveSubjects(subjects);
-          renderSubjects();
-          Swal.fire('ลบเรียบร้อย', '', 'success');
-        }
       });
+
+      if (result.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'deleteSubject', subjectId: id })
+        });
+        await loadDataFromSheets();
+        renderSubjects();
+        Swal.fire('ลบเรียบร้อย', '', 'success');
+      }
     }
 
     function openSubjectDetail(id) {
       currentSubjectId = id;
-      const subjects = getSubjects();
-      const subject = subjects.find(s => s.id === id);
+      const subject = subjectsData.find(s => s.id === id);
 
       document.getElementById('dashboardSection').classList.add('hidden');
       document.getElementById('subjectDetailSection').classList.remove('hidden');
@@ -370,8 +372,7 @@
     }
 
     function renderQuestions() {
-      const subjects = getSubjects();
-      const subject = subjects.find(s => s.id === currentSubjectId);
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
       const qContainer = document.getElementById('questionList');
       qContainer.innerHTML = '';
 
@@ -381,30 +382,133 @@
       }
 
       subject.questions.forEach((q, index) => {
+        let choicesText = '-';
+        if (q.type === 'เลือกตอบ') {
+          choicesText = `1) ${q.choice1||'-'} 2) ${q.choice2||'-'} 3) ${q.choice3||'-'} 4) ${q.choice4||'-'}`;
+        } else if (q.type === 'ถูกผิด') {
+          choicesText = `1) ถูก  2) ผิด`;
+        } else {
+          const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
+          choicesText = opts.length > 0 ? opts.map((c, i) => `${i+1}) ${c}`).join('  ') : '-';
+        }
+
         qContainer.innerHTML += `
           <div class="bg-white p-5 rounded-xl shadow flex justify-between items-start border-l-4 border-indigo-500">
             <div>
               <span class="font-bold text-indigo-700">ข้อที่ ${index + 1}</span>
-              <span class="ml-2 text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600">${q.type || 'แบบเลือกตอบ'}</span>
+              <span class="ml-2 text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-medium border border-indigo-200">แบบ${q.type || 'เลือกตอบ'}</span>
               <p class="mt-2 text-slate-800 font-medium">${q.question || '-'}</p>
               <div class="text-xs text-slate-500 mt-2 space-y-1">
-                <p><strong>ตัวเลือก:</strong> 1) ${q.choice1 || '-'} 2) ${q.choice2 || '-'} 3) ${q.choice3 || '-'} 4) ${q.choice4 || '-'}</p>
+                <p><strong>ตัวเลือก:</strong> ${choicesText}</p>
                 <p><strong>เฉลย:</strong> ${q.answer || '-'} | <strong>ระดับพฤติกรรม:</strong> ${q.behavior || '-'}</p>
               </div>
             </div>
             <div class="flex space-x-2">
               <button onclick="openQuestionModal(${index})" class="text-amber-500 hover:text-amber-700 p-2"><i class="fa-solid fa-pen"></i></button>
-              <button onclick="deleteQuestion(${index})" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash"></i></button>
+              <button onclick="deleteQuestion('${q.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
         `;
       });
     }
 
+    // ฟังก์ชั่นสลับการแสดงผลข้อ 10 ตามรูปแบบข้อสอบ
+    function handleTypeChange(qData = {}) {
+      const type = document.getElementById('q-type').value;
+      const choicesBox = document.getElementById('choices-container');
+      
+      if (type === 'เลือกตอบ') {
+        choicesBox.innerHTML = `
+          <div><label class="font-bold">ตัวเลือก 1</label><input id="q-c1" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice1 || ''}"></div>
+          <div><label class="font-bold">ตัวเลือก 2</label><input id="q-c2" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice2 || ''}"></div>
+          <div><label class="font-bold">ตัวเลือก 3</label><input id="q-c3" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice3 || ''}"></div>
+          <div><label class="font-bold">ตัวเลือก 4</label><input id="q-c4" class="swal2-input !mt-1 !h-9 text-xs" value="${qData.choice4 || ''}"></div>
+        `;
+      } else if (type === 'ถูกผิด') {
+        choicesBox.innerHTML = `
+          <div class="col-span-2 bg-slate-50 p-2.5 rounded border text-slate-600 font-medium text-xs">
+            <strong>ตัวเลือกอัตโนมัติ:</strong> 1) ถูก &nbsp;&nbsp;&nbsp; 2) ผิด
+          </div>
+        `;
+      } else {
+        // รูปแบบ "จับคู่", "อัตนัย", "เติมคำ" -> เพิ่มช่อง Input ได้สูงสุด 4 ช่อง
+        choicesBox.innerHTML = `
+          <div class="col-span-2 space-y-2">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-slate-500 italic">เพิ่มตัวเลือก/คำตอบย่อย (สูงสุด 4 ช่อง)</span>
+              <button type="button" onclick="addDynamicOption()" id="btnAddOption" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-xs transition">
+                <i class="fa-solid fa-plus mr-1"></i> เพิ่มตัวเลือก
+              </button>
+            </div>
+            <div id="dynamic-inputs-list" class="space-y-2"></div>
+          </div>
+        `;
+
+        const existingChoices = [qData.choice1, qData.choice2, qData.choice3, qData.choice4].filter(c => c && c.trim() !== '');
+        if (existingChoices.length > 0) {
+          existingChoices.forEach(val => addDynamicOption(val));
+        } else {
+          addDynamicOption();
+        }
+      }
+    }
+
+    function addDynamicOption(value = '') {
+      const container = document.getElementById('dynamic-inputs-list');
+      if (!container) return;
+
+      const currentInputs = container.querySelectorAll('.dynamic-opt-input');
+      if (currentInputs.length >= 4) {
+        Swal.showValidationMessage('สามารถเพิ่มตัวเลือกได้สูงสุด 4 ช่องเท่านั้น');
+        return;
+      }
+
+      const optId = `q-dyn-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const div = document.createElement('div');
+      div.className = 'flex items-center space-x-2 dynamic-opt-item';
+      div.innerHTML = `
+        <span class="text-xs font-bold text-slate-500 w-12">ช่องที่ ${container.children.length + 1}:</span>
+        <input id="${optId}" class="swal2-input !mt-0 !h-9 text-xs flex-1 dynamic-opt-input" placeholder="ระบุตัวเลือก/ข้อความ" value="${value}">
+        <button type="button" onclick="removeDynamicOption(this)" class="text-red-500 hover:text-red-700 p-1.5 text-xs">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      `;
+      container.appendChild(div);
+      updateDynamicOptionLabels();
+    }
+
+    function removeDynamicOption(btn) {
+      const item = btn.closest('.dynamic-opt-item');
+      if (item) {
+        item.remove();
+        updateDynamicOptionLabels();
+      }
+    }
+
+    function updateDynamicOptionLabels() {
+      const container = document.getElementById('dynamic-inputs-list');
+      if (!container) return;
+      const items = container.querySelectorAll('.dynamic-opt-item');
+      items.forEach((item, index) => {
+        const label = item.querySelector('span');
+        if (label) label.innerText = `ช่องที่ ${index + 1}:`;
+      });
+
+      const btnAdd = document.getElementById('btnAddOption');
+      if (btnAdd) {
+        btnAdd.disabled = items.length >= 4;
+        if (items.length >= 4) {
+          btnAdd.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          btnAdd.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      }
+    }
+
     async function openQuestionModal(qIndex = null) {
-      const subjects = getSubjects();
-      const subject = subjects.find(s => s.id === currentSubjectId);
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
       const q = (qIndex !== null) ? subject.questions[qIndex] : {};
+      const currentType = q.type || 'เลือกตอบ';
 
       const { value: f } = await Swal.fire({
         title: qIndex !== null ? `แก้ไขข้อสอบข้อที่ ${qIndex + 1}` : `เพิ่มข้อสอบใหม่`,
@@ -413,9 +517,12 @@
           <div class="text-left text-xs grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[65vh] overflow-y-auto p-2">
             <div>
               <label class="font-bold">1. รูปแบบข้อสอบ</label>
-              <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs">
-                <option value="แบบเลือกตอบ (Multiple choices)" ${q.type==='แบบเลือกตอบ (Multiple choices)'?'selected':''}>แบบเลือกตอบ (Multiple choices)</option>
-                <option value="แบบอื่น ๆ ถูกผิด จับคู่ อัตนัย เติมคำ" ${q.type==='แบบอื่น ๆ ถูกผิด จับคู่ อัตนัย เติมคำ'?'selected':''}>แบบอื่น ๆ ถูกผิด จับคู่ อัตนัย เติมคำ</option>
+              <select id="q-type" class="swal2-input !mt-1 !h-9 text-xs" onchange="handleTypeChange()">
+                <option value="เลือกตอบ" ${currentType==='เลือกตอบ'?'selected':''}>เลือกตอบ (Multiple choices)</option>
+                <option value="ถูกผิด" ${currentType==='ถูกผิด'?'selected':''}>ถูกผิด</option>
+                <option value="จับคู่" ${currentType==='จับคู่'?'selected':''}>จับคู่</option>
+                <option value="อัตนัย" ${currentType==='อัตนัย'?'selected':''}>อัตนัย</option>
+                <option value="เติมคำ" ${currentType==='เติมคำ'?'selected':''}>เติมคำ</option>
               </select>
             </div>
             <div>
@@ -457,39 +564,54 @@
               <label class="font-bold">9. โจทย์ / คำถาม</label>
               <textarea id="q-question" class="swal2-textarea !mt-1 text-xs" rows="3">${q.question||''}</textarea>
             </div>
-            <div>
-              <label class="font-bold">10. ตัวเลือก 1</label>
-              <input id="q-c1" class="swal2-input !mt-1 !h-9 text-xs" value="${q.choice1||''}">
+            
+            <!-- Dynamic Choices Section (ข้อ 10) -->
+            <div class="col-span-2 border-t pt-2 mt-1">
+              <label class="font-bold text-indigo-700 block mb-2">10. ตัวเลือกข้อสอบ</label>
+              <div id="choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
             </div>
-            <div>
-              <label class="font-bold">ตัวเลือก 2</label>
-              <input id="q-c2" class="swal2-input !mt-1 !h-9 text-xs" value="${q.choice2||''}">
-            </div>
-            <div>
-              <label class="font-bold">ตัวเลือก 3</label>
-              <input id="q-c3" class="swal2-input !mt-1 !h-9 text-xs" value="${q.choice3||''}">
-            </div>
-            <div>
-              <label class="font-bold">ตัวเลือก 4</label>
-              <input id="q-c4" class="swal2-input !mt-1 !h-9 text-xs" value="${q.choice4||''}">
-            </div>
-            <div>
-              <label class="font-bold">ตัวเลือกที่ถูก (เฉลย)</label>
+
+            <div class="col-span-2 border-t pt-2">
+              <label class="font-bold">เฉลย (ตัวเลือกที่ถูก)</label>
               <input id="q-answer" class="swal2-input !mt-1 !h-9 text-xs" value="${q.answer||''}">
             </div>
-            <div>
+            <div class="col-span-2">
               <label class="font-bold">คำอธิบายข้อที่ผิด / เหตุผล</label>
               <input id="q-reason" class="swal2-input !mt-1 !h-9 text-xs" value="${q.reason||''}">
             </div>
           </div>
         `,
+        didOpen: () => {
+          handleTypeChange(q);
+        },
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'บันทึกข้อสอบ',
         cancelButtonText: 'ยกเลิก',
         preConfirm: () => {
+          const typeVal = document.getElementById('q-type').value;
+          let c1 = '', c2 = '', c3 = '', c4 = '';
+          
+          if (typeVal === 'เลือกตอบ') {
+            c1 = document.getElementById('q-c1') ? document.getElementById('q-c1').value : '';
+            c2 = document.getElementById('q-c2') ? document.getElementById('q-c2').value : '';
+            c3 = document.getElementById('q-c3') ? document.getElementById('q-c3').value : '';
+            c4 = document.getElementById('q-c4') ? document.getElementById('q-c4').value : '';
+          } else if (typeVal === 'ถูกผิด') {
+            c1 = 'ถูก';
+            c2 = 'ผิด';
+          } else {
+            const dynInputs = document.querySelectorAll('.dynamic-opt-input');
+            if (dynInputs[0]) c1 = dynInputs[0].value;
+            if (dynInputs[1]) c2 = dynInputs[1].value;
+            if (dynInputs[2]) c3 = dynInputs[2].value;
+            if (dynInputs[3]) c4 = dynInputs[3].value;
+          }
+
           return {
-            type: document.getElementById('q-type').value,
+            id: q.id || 'q_' + Date.now(),
+            number: (qIndex !== null) ? qIndex + 1 : (subject.questions ? subject.questions.length + 1 : 1),
+            type: typeVal,
             group: document.getElementById('q-group').value,
             grade: document.getElementById('q-grade').value,
             strand: document.getElementById('q-strand').value,
@@ -498,10 +620,10 @@
             behavior: document.getElementById('q-behavior').value,
             objective: document.getElementById('q-objective').value,
             question: document.getElementById('q-question').value,
-            choice1: document.getElementById('q-c1').value,
-            choice2: document.getElementById('q-c2').value,
-            choice3: document.getElementById('q-c3').value,
-            choice4: document.getElementById('q-c4').value,
+            choice1: c1,
+            choice2: c2,
+            choice3: c3,
+            choice4: c4,
             answer: document.getElementById('q-answer').value,
             reason: document.getElementById('q-reason').value
           }
@@ -509,28 +631,36 @@
       });
 
       if (f) {
-        let allSubjects = getSubjects();
-        let subIndex = allSubjects.findIndex(s => s.id === currentSubjectId);
-        if (!allSubjects[subIndex].questions) allSubjects[subIndex].questions = [];
-
-        if (qIndex !== null) {
-          allSubjects[subIndex].questions[qIndex] = f;
-        } else {
-          allSubjects[subIndex].questions.push(f);
-        }
-
-        saveSubjects(allSubjects);
+        Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => Swal.showLoading() });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: f })
+        });
+        await loadDataFromSheets();
         renderQuestions();
         Swal.fire('สำเร็จ', 'บันทึกข้อสอบเรียบร้อยแล้ว', 'success');
       }
     }
 
-    function deleteQuestion(qIndex) {
-      let allSubjects = getSubjects();
-      let subIndex = allSubjects.findIndex(s => s.id === currentSubjectId);
-      allSubjects[subIndex].questions.splice(qIndex, 1);
-      saveSubjects(allSubjects);
-      renderQuestions();
+    async function deleteQuestion(qId) {
+      const result = await Swal.fire({
+        title: 'ยืนยันการลบข้อสอบ?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ลบ',
+        cancelButtonText: 'ยกเลิก'
+      });
+
+      if (result.isConfirmed) {
+        Swal.fire({ title: 'กำลังลบ...', didOpen: () => Swal.showLoading() });
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'deleteQuestion', questionId: qId })
+        });
+        await loadDataFromSheets();
+        renderQuestions();
+        Swal.fire('ลบเรียบร้อย', '', 'success');
+      }
     }
 
     function importExcel(e) {
@@ -538,30 +668,43 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = async function(evt) {
         const data = new Uint8Array(evt.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-        let allSubjects = getSubjects();
-        let subIndex = allSubjects.findIndex(s => s.id === currentSubjectId);
+        Swal.fire({ title: 'กำลังนำเข้าข้อมูล...', didOpen: () => Swal.showLoading() });
 
-        rows.forEach(r => {
-          allSubjects[subIndex].questions.push({
+        for (let i = 0; i < rows.length; i++) {
+          const r = rows[i];
+          const qObj = {
+            id: 'q_' + Date.now() + '_' + i,
+            number: i + 1,
+            type: r['รูปแบบ'] || 'เลือกตอบ',
+            group: r['กลุ่มสาระ'] || '',
+            grade: r['ระดับชั้น'] || '',
+            strand: r['สาระ'] || '',
+            standard: r['มาตรฐาน'] || '',
+            indicator: r['ตัวชี้วัด'] || '',
+            behavior: r['ระดับพฤติกรรม'] || 'ความจำ',
+            objective: r['วัตถุประสงค์'] || '',
             question: r['โจทย์'] || r['Question'] || '',
             choice1: r['ตัวเลือก1'] || '',
             choice2: r['ตัวเลือก2'] || '',
             choice3: r['ตัวเลือก3'] || '',
             choice4: r['ตัวเลือก4'] || '',
             answer: r['เฉลย'] || '',
-            type: r['รูปแบบ'] || 'แบบเลือกตอบ (Multiple choices)',
-            behavior: r['ระดับพฤติกรรม'] || 'ความจำ',
-            indicator: r['ตัวชี้วัด'] || ''
-          });
-        });
+            reason: r['เหตุผล'] || ''
+          };
 
-        saveSubjects(allSubjects);
+          await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'saveQuestion', username: currentUser.username, subjectId: currentSubjectId, question: qObj })
+          });
+        }
+
+        await loadDataFromSheets();
         renderQuestions();
         Swal.fire('อัปโหลดสำเร็จ', `นำเข้าข้อสอบจำนวน ${rows.length} ข้อ เรียบร้อยแล้ว`, 'success');
       };
@@ -569,8 +712,7 @@
     }
 
     function printExamCards() {
-      const subjects = getSubjects();
-      const subject = subjects.find(s => s.id === currentSubjectId);
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
       const questions = subject.questions || [];
 
       if (questions.length === 0) {
@@ -599,14 +741,35 @@
     }
 
     function generateCardHTML(subject, q, num) {
-      const isMultipleChoice = (q.type === 'แบบเลือกตอบ (Multiple choices)' || !q.type || q.type === 'แบบเลือกตอบ') ? '✓' : '&nbsp;&nbsp;';
-      const isOtherType = (q.type && q.type !== 'แบบเลือกตอบ (Multiple choices)' && q.type !== 'แบบเลือกตอบ') ? '✓' : '&nbsp;&nbsp;';
+      const qType = q.type || 'เลือกตอบ';
+      
+      const isChoice = (qType === 'เลือกตอบ') ? '✓' : '&nbsp;&nbsp;';
+      const isOther = (qType !== 'เลือกตอบ') ? '✓' : '&nbsp;&nbsp;';
 
       const behaviors = ['ความจำ', 'ความเข้าใจ', 'นำไปใช้', 'วิเคราะห์', 'ประเมินค่า', 'สร้างสรรค์'];
       const bCheck = {};
       behaviors.forEach(b => {
         bCheck[b] = (q.behavior === b) ? '✓' : '&nbsp;&nbsp;';
       });
+
+      let choicesHTML = '';
+      if (qType === 'เลือกตอบ') {
+        choicesHTML = `
+          1) ${q.choice1 || ''}<br>
+          2) ${q.choice2 || ''}<br>
+          3) ${q.choice3 || ''}<br>
+          4) ${q.choice4 || ''}
+        `;
+      } else if (qType === 'ถูกผิด') {
+        choicesHTML = `1) ถูก &nbsp;&nbsp;&nbsp; 2) ผิด`;
+      } else {
+        const opts = [q.choice1, q.choice2, q.choice3, q.choice4].filter(c => c && c.trim() !== '');
+        if (opts.length > 0) {
+          choicesHTML = opts.map((c, i) => `${i + 1}) ${c}`).join('<br>');
+        } else {
+          choicesHTML = `<span class="italic text-slate-500">(- รูปแบบ${qType} -)</span>`;
+        }
+      }
 
       return `
         <div class="item-card-box">
@@ -616,8 +779,8 @@
               <td class="border border-black p-1 w-1/6 font-bold">ข้อที่ <span class="font-normal pl-1">${num}</span></td>
               <td class="border border-black p-1 w-3/6">
                 <span class="font-bold">1. รูปแบบข้อสอบ</span><br>
-                <span class="inline-block border border-black rounded-full w-3.5 h-3.5 text-center text-[10px] leading-3 font-bold mr-1">${isMultipleChoice}</span> แบบเลือกตอบ (Multiple choices)<br>
-                <span class="inline-block border border-black rounded-full w-3.5 h-3.5 text-center text-[10px] leading-3 font-bold mr-1">${isOtherType}</span> แบบอื่น ๆ (ถูกผิด / จับคู่ / อัตนัย / เติมคำ)
+                <span class="inline-block border border-black rounded-full w-3.5 h-3.5 text-center text-[10px] leading-3 font-bold mr-1">${isChoice}</span> แบบเลือกตอบ (Multiple choices)<br>
+                <span class="inline-block border border-black rounded-full w-3.5 h-3.5 text-center text-[10px] leading-3 font-bold mr-1">${isOther}</span> แบบอื่น ๆ (${qType})
               </td>
               <td class="border border-black p-1 w-2/6">
                 <span class="font-bold">เฉลย</span><br>
@@ -666,10 +829,7 @@
                 <div class="font-normal pl-2 mb-2">${q.question || ''}</div>
                 <span class="font-bold">10. ตัวเลือก</span><br>
                 <div class="font-normal pl-2 text-[11px]">
-                  1) ${q.choice1 || ''}<br>
-                  2) ${q.choice2 || ''}<br>
-                  3) ${q.choice3 || ''}<br>
-                  4) ${q.choice4 || ''}
+                  ${choicesHTML}
                 </div>
               </td>
               <td class="border border-black p-1 w-1/3" style="vertical-align: top;">
