@@ -255,12 +255,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- Web App Config Modal Trigger -->
-          <button onclick="openConfigModal()" class="px-3 py-1.5 text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-200 rounded-lg border border-indigo-600 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-database"></i>
-            <span class="hidden sm:inline">ตั้งค่า Google Sheet</span>
-          </button>
-
           <!-- User Info & Logout -->
           <div class="flex items-center gap-2 pl-3 border-l border-indigo-800">
             <div class="text-right hidden sm:block">
@@ -530,28 +524,6 @@
   </div>
 
 
-  <!-- 4. Google Web App URL Config Modal -->
-  <div id="config-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-      <div class="bg-indigo-800 px-6 py-4 text-white flex justify-between items-center">
-        <h3 class="font-bold text-base">ตั้งค่า Google Apps Script Backend</h3>
-        <button onclick="closeConfigModal()" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="p-6 space-y-4">
-        <p class="text-xs text-gray-600">หากคุณวางโค้ด <code class="bg-gray-100 px-1.5 py-0.5 rounded text-indigo-700 font-mono">Code.gs</code> ใน Google Sheet แล้ว ให้นำ Web App URL มาใส่ที่นี่เพื่อเชื่อมโยงข้อมูลแบบเรียลไทม์</p>
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Google Apps Script Web App URL</label>
-          <input type="text" id="config-script-url" class="w-full px-3 py-2 border rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="https://script.google.com/macros/s/.../exec">
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button onclick="closeConfigModal()" class="px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg">ยกเลิก</button>
-          <button onclick="saveScriptUrl()" class="px-4 py-2 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow">บันทึกค่า</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
   <!-- PRINT CONTAINER (ซ่อนเมื่ออยู่หน้าปกติ / แสดงเมื่อสั่งพิมพ์) -->
   <div id="print-area" class="hidden"></div>
 
@@ -561,7 +533,7 @@
     
     // State Variables
     let currentUser = null;
-    let scriptUrl = localStorage.getItem('gas_script_url') || '';
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbx9KLEC8MF_c0pgYoIZrI84jWOO5l6NnCXnfs0MQ6fk-uGuL9T4iwmevmp6DzJ8qG4/exec";
     let subjectsData = [];
     let currentSubjectId = null;
     let previewingQuestion = null;
@@ -1366,24 +1338,6 @@
           </div>
         </div>
       `;
-    }
-
-    function openConfigModal() {
-      document.getElementById('config-script-url').value = scriptUrl;
-      document.getElementById('config-modal').classList.remove('hidden');
-    }
-
-    function closeConfigModal() {
-      document.getElementById('config-modal').classList.add('hidden');
-    }
-
-    function saveScriptUrl() {
-      const url = document.getElementById('config-script-url').value.trim();
-      scriptUrl = url;
-      localStorage.setItem('gas_script_url', url);
-      closeConfigModal();
-      Swal.fire('บันทึกสำเร็จ', 'อัปเดต Google Apps Script Web App URL เรียบร้อยแล้ว', 'success');
-      loadSubjectsData();
     }
   </script>
 </body>
