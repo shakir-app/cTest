@@ -571,7 +571,6 @@
       checkSavedUser();
     };
 
-    
     function checkSavedUser() {
       const saved = localStorage.getItem('itemcard_user');
       if (saved) {
@@ -618,7 +617,6 @@
       }
     }
 
-    
     async function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById('login-username').value.trim();
@@ -722,7 +720,6 @@
       });
     }
 
-    
     async function loadSubjectsData() {
       if (scriptUrl && currentUser) {
         try {
@@ -773,7 +770,8 @@
                 choice4: 'ไมโทคอนเดรีย (Mitochondria)',
                 answer: 'ข้อ ข. ผนังเซลล์ (Cell wall)',
                 reason: 'ผนังเซลล์เป็นโครงสร้างแข็งแรงที่ทำหน้าที่ค้ำจุนเซลล์พืช ประกอบด้วยเซลลูโลส ซึ่งไม่มีในเซลล์สัตว์',
-                wrongReason: 'นิวเคลียส เยื่อหุ้มเซลล์ และไมโทคอนเดรีย เป็นออร์แกเนลล์พื้นฐานที่พบได้ทั้งในเซลล์พืชและเซลล์สัตว์'
+                wrongReason: 'นิวเคลียส เยื่อหุ้มเซลล์ และไมโทคอนเดรีย เป็นออร์แกเนลล์พื้นฐานที่พบได้ทั้งในเซลล์พืชและเซลล์สัตว์',
+                author: currentUser ? (currentUser.fullname || currentUser.username) : ''
               }
             ]
           }
@@ -927,8 +925,6 @@
       });
     }
 
-
-
     function renderQuestionsList(subject) {
       const container = document.getElementById('question-list-container');
       const questions = subject.questions || [];
@@ -1081,7 +1077,7 @@
         answer: document.getElementById('q-answer').value.trim(),
         reason: document.getElementById('q-reason').value.trim(),
         wrongReason: document.getElementById('q-wrong-reason').value.trim(),
-        author: currentUser ? currentUser.fullname : ''
+        author: currentUser ? (currentUser.fullname || currentUser.username) : ''
       };
 
       const qIndex = subject.questions.findIndex(q => q.id === qObj.id);
@@ -1137,8 +1133,6 @@
       });
     }
 
-
-
     function previewQuestionModal(qId) {
       const subject = subjectsData.find(s => s.id === currentSubjectId);
       if (!subject) return;
@@ -1174,7 +1168,6 @@
         printArea.classList.add('hidden');
       }, 500);
     }
-
 
     function printExamCards() {
       const subject = subjectsData.find(s => s.id === currentSubjectId);
@@ -1241,7 +1234,8 @@
         }
       }
 
-      const authorName = currentUser ? (currentUser.fullname || currentUser.username) : '';
+      // ดึงชื่อ-สกุลจริงของผู้ออกข้อสอบจากฐานข้อมูล หรือสแกนหาผู้ใช้งานปัจจุบัน
+      const authorName = (q.author === currentUser.username ? currentUser.fullname : q.author) || (currentUser ? (currentUser.fullname || currentUser.username) : '');
 
       return `
         <div class="card-container">
@@ -1374,7 +1368,6 @@
       `;
     }
 
-    // Modal Config Apps Script
     function openConfigModal() {
       document.getElementById('config-script-url').value = scriptUrl;
       document.getElementById('config-modal').classList.remove('hidden');
