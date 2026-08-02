@@ -948,6 +948,13 @@
               </div>
 
               <div class="flex items-center gap-1 shrink-0 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                <!-- ปุ่มเลื่อนลำดับขึ้น - ลง -->
+                <button onclick="moveQuestion('${q.id}', -1)" ${idx === 0 ? 'disabled class="p-1.5 text-gray-300 cursor-not-allowed"' : 'class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition"'} title="เลื่อนขึ้น">
+                  <i class="fa-solid fa-arrow-up text-sm sm:text-base"></i>
+                </button>
+                <button onclick="moveQuestion('${q.id}', 1)" ${idx === questions.length - 1 ? 'disabled class="p-1.5 text-gray-300 cursor-not-allowed"' : 'class="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition"'} title="เลื่อนลง">
+                  <i class="fa-solid fa-arrow-down text-sm sm:text-base"></i>
+                </button>
                 <button onclick="previewQuestionModal('${q.id}')" class="px-2.5 py-1.5 text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg font-medium transition flex items-center gap-1">
                   <i class="fa-solid fa-eye"></i> <span>ดูตัวอย่าง</span>
                 </button>
@@ -1105,6 +1112,8 @@
       }).then((result) => {
         if (result.isConfirmed) {
           subject.questions = subject.questions.filter(q => q.id !== qId);
+          // ปรับเลขข้อสอบใหม่หลังลบ
+          subject.questions.forEach((q, i) => q.number = i + 1);
           saveLocalSubjects();
           renderQuestionsList(subject);
           renderSubjectsList();
@@ -1117,6 +1126,44 @@
           }
         }
       });
+    }
+
+    // ฟังก์ชันเลื่อนลำดับข้อสอบ (ขึ้น - ลง)
+    async function moveQuestion(qId, direction) {
+      const subject = subjectsData.find(s => s.id === currentSubjectId);
+      if (!subject || !subject.questions) return;
+
+      const idx = subject.questions.findIndex(q => q.id === qId);
+      if (idx === -1) return;
+
+      const targetIdx = idx + direction;
+      if (targetIdx < 0 || targetIdx >= subject.questions.length) return;
+
+      // สลับตำแหน่งในอาร์เรย์
+      const temp = subject.questions[idx];
+      subject.questions[idx] = subject.questions[targetIdx];
+      subject.questions[targetIdx] = temp;
+
+      // ปรับลำดับเลขข้อสอบให้เป็น 1, 2, 3...
+      subject.questions.forEach((q, i) => {
+        q.number = i + 1;
+      });
+
+      saveLocalSubjects();
+      renderQuestionsList(subject);
+
+      // ส่งคำสั่งอัปเดตไปยัง Backend (ถ้ามี)
+      if (scriptUrl) {
+        fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'reorderQuestions',
+            subjectId: subject.id,
+            username: currentUser.username,
+            questions: subject.questions.map(q => ({ id: q.id, number: q.number }))
+          })
+        }).catch(err => console.warn('Reorder sync error', err));
+      }
     }
 
     function previewQuestionModal(qId) {
